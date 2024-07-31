@@ -1,0 +1,22 @@
+\documentclass[tikz, margin=3mm]{standalone}
+\usepackage{fontspec}
+\usetikzlibrary{matrix}
+\input{symbols.tex}
+
+\begin{document}
+\setmainfont[Extension={.ttf},ItalicFont={DejaVuSerif-Italic}]{FreeSerif}
+\begin{tikzpicture}
+    \matrix[matrix of nodes,
+            nodes = {draw, minimum size=5mm, 
+                     anchor=center, 
+                     inner sep=0pt, outer sep=0pt},
+            column sep=-\pgflinewidth,
+            row sep=-\pgflinewidth,
+            ]
+{
+  \Attack &{}\Attack&{} \Attack\\
+  {}&{}\KI&{} \\
+  \Attack &{}&{} \Attack\\
+};
+    \end{tikzpicture}
+\end{document}

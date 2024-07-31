@@ -1,0 +1,13 @@
+\documentclass[tikz, margin=0mm]{standalone}
+\usepackage{fontspec}
+\usetikzlibrary{matrix}
+\input{symbols.tex}
+
+\begin{document}
+\setmainfont[Extension={.ttf},ItalicFont={DejaVuSerif-Italic}]{FreeSerif}
+\begin{tikzpicture}[every node/.style={inner sep=0,outer sep=0}]
+  \fontsize{512pt}{512pt}\selectfont
+  \node at (0,0) {\Bishop};
+  \node at (0,0) {\inlinegraphics{prohibit512red.png}};
+\end{tikzpicture}
+\end{document}

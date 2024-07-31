@@ -1,0 +1,62 @@
+\usepackage{graphicx,calc,amssymb}
+\newlength\myheight
+\newlength\mydepth
+\settototalheight\myheight{Xygp}
+\settodepth\mydepth{Xygp}
+\setlength\fboxsep{0pt}
+\newcommand*\inlinegraphics[1]{%
+  \settototalheight\myheight{Xygp}%
+  \settodepth\mydepth{Xygp}%
+  \raisebox{-.1\mydepth}{\includegraphics[height=.85\myheight]{#1}}%
+}
+\providecommand{\WKnight}{♘}
+\providecommand{\BKnight}{♞}
+\providecommand{\Knight}{\BKnight}
+\providecommand{\WPawn}{♙}
+\providecommand{\BPawn}{♟︎}
+\providecommand{\Pawn}{\BPawn}
+\providecommand{\WKing}{♔}
+\providecommand{\BKing}{♚}
+\providecommand{\King}{\BKing}
+\providecommand{\WQueen}{♕}
+\providecommand{\BQueen}{♛}
+\providecommand{\Queen}{\BQueen}
+\providecommand{\WBishop}{♗}
+\providecommand{\BBishop}{♝}
+\providecommand{\Bishop}{\BBishop}
+\providecommand{\WRook}{♖}
+\providecommand{\BRook}{♜}
+\providecommand{\Rook}{\BRook}
+\providecommand{\All}{\ding{72}}
+\providecommand{\KMI}{➊}
+% \providecommand{\KII}{➋}
+% \providecommand{\KIII}{➌}
+% \providecommand{\KIV}{➍} 
+\providecommand{\KI}{➀}
+\providecommand{\KII}{➁}
+\providecommand{\KIII}{➂}
+\providecommand{\KIV}{➃}
+\providecommand{\RI}{\inlinegraphics{robot1.png}}
+\providecommand{\RII}{\inlinegraphics{robot2.png}}
+\providecommand{\RIII}{\inlinegraphics{robot3.png}}
+\providecommand{\RIV}{\inlinegraphics{robot4.png}}
+\providecommand{\RV}{\inlinegraphics{robot5.png}}
+\providecommand{\Move}{\inlinegraphics{move.png}}
+\providecommand{\Attack}{\inlinegraphics{attack.png}}
+\providecommand{\Drop}{\inlinegraphics{down.pdf}}
+\providecommand{\Same}{\inlinegraphics{identical.png}}
+\providecommand{\Jump}{\inlinegraphics{jump.png}}
+\providecommand{\Back}{\inlinegraphics{back.png}}
+\providecommand{\Board}{\inlinegraphics{ChessBoard.png}}
+\providecommand{\Sym}{\fontsize{20pt}{15pt}\selectfont}
+\providecommand{\NoKing}{\inlinegraphics{NOKING}}
+\providecommand{\NoPawn}{\inlinegraphics{NOPAWN}}
+\providecommand{\NoKnight}{\inlinegraphics{NOKNIGHT}}
+\providecommand{\NoQueen}{\inlinegraphics{NOQUEEN}}
+\providecommand{\NoRook}{\inlinegraphics{NOROOK}}
+\providecommand{\NoBishop}{\inlinegraphics{NOBISHOP}}
+\providecommand{\Action}{\inlinegraphics{action.png}}
+\providecommand{\TenEight}{\inlinegraphics{10x8.pdf}}
+\providecommand{\EightTen}{\inlinegraphics{8x10.pdf}}
+\providecommand{\PM}{±}
+\providecommand{\diff}{⇌}

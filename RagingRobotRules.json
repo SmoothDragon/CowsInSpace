@@ -1,0 +1,70 @@
+{ "text_cards":
+  [
+    {
+      "caption": "VERTICAL STACK",
+      "description": "Lay boards in a row. You may use a move to go up or down a board in the same position.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RI"
+    },
+    {
+      "caption": "SIMD",
+      "description": "The same instruction is given to all robots.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "MAYBE(SIMD)",
+      "description": "The same instruction may be given to all robots.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIII"
+    },
+    {
+      "caption": "SILVER SURFER",
+      "description": "The silver robot must touch another robot that moved.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIV"
+    },
+    {
+      "caption": "180",
+      "description": "Rotate all boards 180 degrees.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RI"
+    },
+    {
+      "caption": "HOLES",
+      "description": "Mark a hole on each board. Robots may not pass over holes.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "TELEPORT",
+      "description": "A robot may teleport between any two locations of the same color as a move.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "NINJAS",
+      "description": "You may use a move to pass through a wall.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIV"
+    }
+  ],
+  "graphic_cards":[
+  ]
+}

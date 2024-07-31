@@ -1,0 +1,52 @@
+\documentclass[tikz]{standalone}
+
+% \usepackage[utf8]{inputenc}
+\usepackage{fontenc}
+\usepackage{skak}
+\usepackage{wasysym}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+\usepackage{tikz}
+
+\newcommand{\nvar}[2]{
+    \newlength{#1}
+    \setlength{#1}{#2}
+}
+
+\nvar{\dx}{1cm}
+\newcommand{\tkzcircsimple}{\tikz{\node[circle,inner sep=0,outer sep=0,draw]{$\phantom{o}$}}}
+\newcommand{\tkzcircscale}{\mathchoice%
+{\tikz{\node[circle,inner sep=0,outer sep=0,draw]{$\displaystyle \phantom{o}$}}}%
+{\tikz{\node[circle,inner sep=0,outer sep=0,draw]{$\textstyle \phantom{o}$}}}%
+{\tikz{\node[circle,inner sep=0,outer sep=0,draw]{$\scriptstyle \phantom{o}$}}}%
+{\tikz{\node[circle,inner sep=0,outer sep=0,draw]{$\scriptscriptstyle \phantom{o}$}}}%
+}
+\begin{document}
+\begin{tikzpicture}
+    \path [draw=red, thick, fill=orange!40, even odd rule,] (-1,-1) rectangle (3,3) (0,0) rectangle (2,2);
+    \draw [semithick][help lines, step=\dx] (-1,-1) grid ( 3, 3);
+    \draw [thin,dashed][help lines, step=.5*\dx] (-1,-1) grid ( 3, 3);
+    \foreach \i in {0,...,2}
+      \foreach \j in {.5, 1.5}
+      {
+        \node [green] at (\i,\j) {$\times$};
+        \node [black!80] at (\j,\i) {$\otimes$};
+      }
+\end{tikzpicture}
+
+\begin{tikzpicture}
+\draw[step=0.5cm,color=gray] (-1,-1) grid (1,1);
+\matrix[matrix of nodes,nodes={inner sep=0pt,text width=.5cm,align=center,minimum height=.5cm}]{
+ & \symqueen &   &   \\
+  &   &\Circle   & \symqueen \\
+\symqueen &$\tkzcircscale$   &   &   \\
+  &\otimes   & \symqueen &  \\
+  % & ♕ &   &    \\
+  % &   &    & ♕ \\
+% ♕&   &    &    \\
+  % &   & ♕ &    \\
+};
+\end{tikzpicture}
+ 
+\end{document}
