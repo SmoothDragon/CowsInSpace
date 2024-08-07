@@ -1,6 +1,134 @@
 { "text_cards":
   [
     {
+      "caption": "TETRAHEDRON",
+      "description": "Separate the four boards, assuming walls in between. You may use a move to teleport to a different board in the same XY position.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RI"
+    },
+    {
+      "caption": "FREE BIRD",
+      "description": "The silver robot moves for free.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "DIAGONALS",
+      "description": "The silver robot only moves diagonally. The move is affected by three spaces: the space is passes through directly and the two it crosses diagonally.",
+      "origin": "I",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIII"
+    },
+    {
+      "caption": "AGENT SMITH",
+      "description": "The silver may exchange positions with another robot. This counts as one move. For each of the robots adjacent to a wall, increase the move count by one.",
+      "origin": "I",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIV"
+    },
+    {
+      "caption": "TRADING PLACES",
+      "description": "The silver robot may trade places with another robot. This counts as two moves.",
+      "origin": "I",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RI"
+    },
+    {
+      "caption": "DUB STEP",
+      "description": "All non-target robots only move one space.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "STUTTER STEP",
+      "description": "The silver robot may stop anywhere suring its move, but my not move again thereafter.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIII"
+    },
+    {
+      "caption": "KING FOR A DAY",
+      "description": "The silver robot moves like a orthodox chess king, but may not jump over walls.",
+      "origin": "I",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIV"
+    },
+    {
+      "caption": "BEAM ME UP SCOTTY!",
+      "description": "The silver robot may be beamed to any square once.",
+      "origin": "I",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RI"
+    },
+    {
+      "caption": "FORCE FIELD",
+      "description": "The silver robot may turn on a force field that affects the eight squares around it turning them into solid walls.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "MERCIFUL ROBOT",
+      "description": "The silver robot only be moved by players with the fewest target tokens",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIII"
+    },
+    {
+      "caption": "MIDAS TOUCH",
+      "description": "The target robot must ricochet off the silver robot en route to the target.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIV"
+    },
+    {
+      "caption": "SUMO WRESTLING",
+      "description": "Robot may push another robot any number of squares before ricocheting.",
+      "origin": "I",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RI"
+    },
+    {
+      "caption": "GRAVITY ASSIST",
+      "description": "Robots may circularly move in the eight squares around another robot as part of a single move.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RII"
+    },
+    {
+      "caption": "ONE-WAY WALLS",
+      "description": "Robots do not ricochet off of walls when heading towards another board square.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIII"
+    },
+    {
+      "caption": "TAG",
+      "description": "After robots collide, both my be moved simultaneously on ensuing turns.",
+      "origin": "C",
+      "genre":"+",
+      "quote": "",
+      "symbol": "\\RIV"
+    },
+    {
       "caption": "VERTICAL STACK",
       "description": "Lay boards in a row. You may use a move to go up or down a board in the same position.",
       "origin": "C",
