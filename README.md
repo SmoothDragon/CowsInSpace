@@ -10,5 +10,4 @@ The cards are designed to be a mapping from rules to rules, so the card order ma
 Have fun playing!
 
 # Example card rule page
-![RagingRobotRules](https://github.com/SmoothDragon/RaginRobotRules/blob/main/RagingRobotRules.png)
-
+![RagingRobotRules](https://github.com/SmoothDragon/RagingRobotRules/blob/main/RagingRobotRules.png)
