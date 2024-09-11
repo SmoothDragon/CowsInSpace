@@ -3,9 +3,9 @@
 TEXTMP=.textmp
 GRAPHICS= $(wildcard graphics/*.pdf)
 
-main: RagingRobotRules.pdf RagingRobotRules.png
+main: Frictionless.pdf Frictionless.png
 
-RagingRobotRules.tex: RagingRobotRules.tex.py RagingRobotRules.json symbols.tex $(GRAPHICS)
+Frictionless.tex: Frictionless.tex.py Frictionless.json symbols.tex $(GRAPHICS)
 
 %.tex: %.tex.py
 	python3 $< > $@
