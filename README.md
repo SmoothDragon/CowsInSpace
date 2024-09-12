@@ -24,7 +24,7 @@ Have fun playing!
 
 # Rule modifers
 -billiards
--teleport through wall
+-tunneling through wall
 -magnetic repulsion
 -Non-target may take one step
 -Non-target may edge jump

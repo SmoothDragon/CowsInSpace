@@ -21,14 +21,16 @@ def calc_perimeter(edges):
     return perimeter, interior
 
 def add_grid(d, edges, color='black', stroke_width=2):
-    edges = 10*3.78*edges
+    # edges = 10*3.78*edges
+    edges = 15*3.78*edges
     for edge in edges:
         d.append(draw.Line(*complex2eisen(edge[0]),*complex2eisen(edge[1]), stroke=color, stroke_width=stroke_width, fill='none'))
 
 def addCenters(d,n):
     centers = np.array([1+1j + ii*(1-1j) for ii in range(n)])
     centers = np.hstack([centers + ii*(1+2j) for ii in range(n+1)])
-    centers = 10*3.78*centers
+    # centers = 10*3.78*centers
+    centers = 15*3.78*centers
     for center in centers:
         d.append(draw.Circle(*complex2eisen(center),10, stroke=cut, stroke_width=2, fill='red'))
 
