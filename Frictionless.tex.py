@@ -216,7 +216,7 @@ def buildMagicTeX(cards):
 if __name__ == '__main__':
     import json
 
-    cardfile = 'RagingRobotRules.json'
+    cardfile = 'Frictionless.json'
     # with open('cards.json', 'w') as outfile:
         # json.dump(cards, outfile, indent=2, sort_keys=True)
     with open(cardfile, 'r') as infile:

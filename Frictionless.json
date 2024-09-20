@@ -1,196 +1,124 @@
 { "text_cards":
   [
     {
-      "caption": "TETRAHEDRON",
-      "description": "Separate the four boards, assuming walls in between. You may use a move to teleport to a different board in the same XY position.",
-      "origin": "C",
-      "genre":"+",
+      "caption": "LOW ENERGY STATE",
+      "description": "Non-designated cows move only 1 hex at a time.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RI"
+      "symbol": "\\COW"
     },
     {
-      "caption": "FREE BIRD",
-      "description": "The silver robot moves for free.",
-      "origin": "C",
-      "genre":"+",
+      "caption": "TARGET ORBITALS",
+      "description": "Cows may also orbit target hexes.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RII"
+      "symbol": "\\COW"
     },
     {
-      "caption": "DIAGONALS",
-      "description": "The silver robot only moves diagonally. The move is affected by three spaces: the space is passes through directly and the two it crosses diagonally.",
-      "origin": "I",
-      "genre":"+",
+      "caption": "EMERGENCY BRAKE",
+      "description": "Cows may stop anywhere, but cannot move again afterwards.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RIII"
-    },
-    {
-      "caption": "AGENT SMITH",
-      "description": "The silver may exchange positions with another robot. This counts as one move. For each of the robots adjacent to a wall, increase the move count by one.",
-      "origin": "I",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RIV"
-    },
-    {
-      "caption": "TRADING PLACES",
-      "description": "The silver robot may trade places with another robot. This counts as two moves.",
-      "origin": "I",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RI"
-    },
-    {
-      "caption": "DUB STEP",
-      "description": "All non-target robots only move one space.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RII"
-    },
-    {
-      "caption": "STUTTER STEP",
-      "description": "The silver robot may stop anywhere suring its move, but my not move again thereafter.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RIII"
-    },
-    {
-      "caption": "KING FOR A DAY",
-      "description": "The silver robot moves like a orthodox chess king, but may not jump over walls.",
-      "origin": "I",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RIV"
-    },
-    {
-      "caption": "BEAM ME UP SCOTTY!",
-      "description": "The silver robot may be beamed to any square once.",
-      "origin": "I",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RI"
+      "symbol": "\\COW"
     },
     {
       "caption": "FORCE FIELD",
-      "description": "The silver robot may turn on a force field that affects the eight squares around it turning them into solid walls.",
-      "origin": "C",
-      "genre":"+",
+      "description": "Cows may turn on a force field turning the surrounding hexes into walls.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RII"
+      "symbol": "\\COW"
     },
     {
-      "caption": "MERCIFUL ROBOT",
-      "description": "The silver robot only be moved by players with the fewest target tokens",
-      "origin": "C",
-      "genre":"+",
+      "caption": "INELASTIC COLLISION",
+      "description": "A cow may push another cow any number of hexes before stopping.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RIII"
+      "symbol": "\\COW"
     },
     {
-      "caption": "MIDAS TOUCH",
-      "description": "The target robot must ricochet off the silver robot en route to the target.",
-      "origin": "C",
-      "genre":"+",
+      "caption": "QUANTUM TUNNELING",
+      "description": "A cow may move through one blockade and continue moving in the same direction.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RIV"
+      "symbol": "\\COW"
     },
     {
-      "caption": "SUMO WRESTLING",
-      "description": "Robot may push another robot any number of squares before ricocheting.",
-      "origin": "I",
-      "genre":"+",
+      "caption": "SINGLE INSTRUCTION, MULTIPLE DATA",
+      "description": "The same movement instruction may be given to multiple cows at the same time.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RI"
+      "symbol": "\\COW"
     },
     {
-      "caption": "GRAVITY ASSIST",
-      "description": "Robots may circularly move in the eight squares around another robot as part of a single move.",
-      "origin": "C",
-      "genre":"+",
+      "caption": "TARGET TURNER",
+      "description": "Any number of targets may be rotated for a turn.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RII"
+      "symbol": "\\COW"
     },
     {
-      "caption": "ONE-WAY WALLS",
-      "description": "Robots do not ricochet off of walls when heading towards another board square.",
-      "origin": "C",
-      "genre":"+",
+      "caption": "WIDE REACH",
+      "description": "A cow may stop if either of the side diagonals are blocked.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RIII"
-    },
-    {
-      "caption": "TAG",
-      "description": "After robots collide, both my be moved simultaneously on ensuing turns.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RIV"
-    },
-    {
-      "caption": "VERTICAL STACK",
-      "description": "Lay boards in a row. You may use a move to go up or down a board in the same position.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RI"
-    },
-    {
-      "caption": "SIMD",
-      "description": "The same instruction is given to all robots.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RII"
-    },
-    {
-      "caption": "MAYBE(SIMD)",
-      "description": "The same instruction may be given to all robots.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RIII"
-    },
-    {
-      "caption": "SILVER SURFER",
-      "description": "The silver robot must touch another robot that moved.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RIV"
-    },
-    {
-      "caption": "180",
-      "description": "Rotate all boards 180 degrees.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RI"
-    },
-    {
-      "caption": "HOLES",
-      "description": "Mark a hole on each board. Robots may not pass over holes.",
-      "origin": "C",
-      "genre":"+",
-      "quote": "",
-      "symbol": "\\RII"
+      "symbol": "\\COW"
     },
     {
       "caption": "TELEPORT",
-      "description": "A robot may teleport between any two locations of the same color as a move.",
-      "origin": "C",
-      "genre":"+",
+      "description": "Non-designated cows may use a move to telport from one target to another.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RII"
+      "symbol": "\\COW"
     },
     {
-      "caption": "NINJAS",
-      "description": "You may use a move to pass through a wall.",
-      "origin": "C",
-      "genre":"+",
+      "caption": "SLOWER SPEED OF LIGHT",
+      "description": "Before each turn, one chosen cow moves 1 hex in a set direction. Other cows may interact with it during their moves.",
+      "origin": "",
+      "genre":"",
       "quote": "",
-      "symbol": "\\RIV"
+      "symbol": "\\COW"
+    },
+    {
+      "caption": "CURVED SPACE",
+      "description": "Outer walls are removed. Cows moving into a wall wrapp to the opposite side of the board and continue moving.",
+      "origin": "",
+      "genre":"",
+      "quote": "",
+      "symbol": "\\COW"
+    },
+    {
+      "caption": "MAGNETIC REPULSION",
+      "description": "Non-designated cows may stop one hex short of a blocking hex.",
+      "origin": "",
+      "genre":"",
+      "quote": "",
+      "symbol": "\\COW"
+    },
+    {
+      "caption": "ELASTIC COLLISION",
+      "description": "After a cow collision, the stationary cow moves in the same direction that is was pushed as part of the same move.",
+      "origin": "",
+      "genre":"",
+      "quote": "",
+      "symbol": "\\COW"
+    },
+    {
+      "caption": "ENTANGLEMENT",
+      "description": "Adjacent cows may swap places and/or move together as an entangled pair.",
+      "origin": "",
+      "genre":"",
+      "quote": "",
+      "symbol": "\\COW"
     }
   ],
   "graphic_cards":[
