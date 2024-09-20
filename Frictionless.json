@@ -26,7 +26,7 @@
     },
     {
       "caption": "FORCE FIELD",
-      "description": "Cows may turn on a force field turning the surrounding hexes into walls.",
+      "description": "Cows may turn their surrounding hexes into blockades.",
       "origin": "",
       "genre":"",
       "quote": "",
@@ -58,15 +58,15 @@
     },
     {
       "caption": "TARGET TURNER",
-      "description": "Any number of targets may be rotated for a turn.",
+      "description": "Any number of targets may be rotated to a new position for a turn.",
       "origin": "",
       "genre":"",
       "quote": "",
       "symbol": "\\COW"
     },
     {
-      "caption": "WIDE REACH",
-      "description": "A cow may stop if either of the side diagonals are blocked.",
+      "caption": "PARTICLE WAVE DUALITY",
+      "description": "A cow may stop if any of the side diagonals are blocked.",
       "origin": "",
       "genre":"",
       "quote": "",
@@ -89,15 +89,15 @@
       "symbol": "\\COW"
     },
     {
-      "caption": "CURVED SPACE",
-      "description": "Outer walls are removed. Cows moving into a wall wrapp to the opposite side of the board and continue moving.",
+      "caption": "SPACE CURVATURE",
+      "description": "Outer walls are removed. Cows moving into a wall wrap to the opposite side of the board and continue moving.",
       "origin": "",
       "genre":"",
       "quote": "",
       "symbol": "\\COW"
     },
     {
-      "caption": "MAGNETIC REPULSION",
+      "caption": "ACTION AT A DISTANCE",
       "description": "Non-designated cows may stop one hex short of a blocking hex.",
       "origin": "",
       "genre":"",
