@@ -39,7 +39,7 @@ def line_grooves(n, d, w_groove):
     lines2 = sd.union()(*[sd.translate([0,3**.5/2*d*ii])(line2) for ii in range(-n-1,n+2)])
     lines2 = sd.union()(*[sd.rotate(120*ii)(lines2) for ii in range(3)])
     result = lines - lines2
-    # result = lines
+    result = lines
     # if False:  # Circles
         # result = sd.translate((-d*.5*8, -d*4*3**-.5))(result)
         # result = sd.intersection()(result, sd.union()(*[sd.circle(r=1.6*ii)-sd.circle(r=1.6*ii-0.8) for ii in range(90)]))
@@ -90,8 +90,8 @@ if __name__ == '__main__':
     # connect = sd.intersection()(result, pin_bumps(n, d, d_pin))
     final = sd.linear_extrude(2.6)(result)
     # result += sd.linear_extrude(4)(connect)
-    final += sd.translate([0,0,2.6])(sd.linear_extrude(.4)(result-line_grooves(n,d,2)))
-    # final += sd.translate([0,0,2.6])(sd.linear_extrude(.4)(result & line_grooves(n,d,2)))
+    # final += sd.translate([0,0,2.6])(sd.linear_extrude(.4)(result-line_grooves(n,d,2)))
+    final += sd.translate([0,0,2.6])(sd.linear_extrude(.4)(result & line_grooves(n,d,2)))
     # final = line_grooves(n,d,2)
     final = sd.scad_render(final, file_header=f'$fn={fn};')
     print(final)

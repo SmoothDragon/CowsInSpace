@@ -1186,7 +1186,7 @@ $fn=64;union() {
 	}
 	translate(v = [0, 0, 2.6]) {
 		linear_extrude(height = 0.4) {
-			difference() {
+			intersection() {
 				union() {
 					difference() {
 						union() {
@@ -2370,410 +2370,205 @@ $fn=64;union() {
 						}
 					}
 				}
-				difference() {
-					union() {
-						rotate(a = 0) {
-							union() {
-								translate(v = [0, -225.16660498395402]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -202.64994448555862]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -180.13328398716322]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -157.61662348876783]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -135.09996299037243]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -112.58330249197701]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -90.06664199358161]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -67.54998149518622]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -45.033320996790806]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -22.516660498395403]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 0.0]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 22.516660498395403]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 45.033320996790806]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 67.54998149518622]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 90.06664199358161]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 112.58330249197701]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 135.09996299037243]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 157.61662348876783]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 180.13328398716322]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 202.64994448555862]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 225.16660498395402]) {
-									square(center = true, size = [702, 8]);
-								}
+				union() {
+					rotate(a = 0) {
+						union() {
+							translate(v = [0, -225.16660498395402]) {
+								square(center = true, size = [702, 8]);
 							}
-						}
-						rotate(a = 120) {
-							union() {
-								translate(v = [0, -225.16660498395402]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -202.64994448555862]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -180.13328398716322]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -157.61662348876783]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -135.09996299037243]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -112.58330249197701]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -90.06664199358161]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -67.54998149518622]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -45.033320996790806]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -22.516660498395403]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 0.0]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 22.516660498395403]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 45.033320996790806]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 67.54998149518622]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 90.06664199358161]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 112.58330249197701]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 135.09996299037243]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 157.61662348876783]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 180.13328398716322]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 202.64994448555862]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 225.16660498395402]) {
-									square(center = true, size = [702, 8]);
-								}
+							translate(v = [0, -202.64994448555862]) {
+								square(center = true, size = [702, 8]);
 							}
-						}
-						rotate(a = 240) {
-							union() {
-								translate(v = [0, -225.16660498395402]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -202.64994448555862]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -180.13328398716322]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -157.61662348876783]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -135.09996299037243]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -112.58330249197701]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -90.06664199358161]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -67.54998149518622]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -45.033320996790806]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, -22.516660498395403]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 0.0]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 22.516660498395403]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 45.033320996790806]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 67.54998149518622]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 90.06664199358161]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 112.58330249197701]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 135.09996299037243]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 157.61662348876783]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 180.13328398716322]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 202.64994448555862]) {
-									square(center = true, size = [702, 8]);
-								}
-								translate(v = [0, 225.16660498395402]) {
-									square(center = true, size = [702, 8]);
-								}
+							translate(v = [0, -180.13328398716322]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -157.61662348876783]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -135.09996299037243]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -112.58330249197701]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -90.06664199358161]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -67.54998149518622]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -45.033320996790806]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -22.516660498395403]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 0.0]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 22.516660498395403]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 45.033320996790806]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 67.54998149518622]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 90.06664199358161]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 112.58330249197701]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 135.09996299037243]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 157.61662348876783]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 180.13328398716322]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 202.64994448555862]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 225.16660498395402]) {
+								square(center = true, size = [702, 8]);
 							}
 						}
 					}
-					union() {
-						rotate(a = 0) {
-							union() {
-								translate(v = [0, -225.16660498395402]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -202.64994448555862]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -180.13328398716322]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -157.61662348876783]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -135.09996299037243]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -112.58330249197701]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -90.06664199358161]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -67.54998149518622]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -45.033320996790806]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -22.516660498395403]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 0.0]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 22.516660498395403]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 45.033320996790806]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 67.54998149518622]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 90.06664199358161]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 112.58330249197701]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 135.09996299037243]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 157.61662348876783]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 180.13328398716322]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 202.64994448555862]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 225.16660498395402]) {
-									square(center = true, size = [702, 6]);
-								}
+					rotate(a = 120) {
+						union() {
+							translate(v = [0, -225.16660498395402]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -202.64994448555862]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -180.13328398716322]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -157.61662348876783]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -135.09996299037243]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -112.58330249197701]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -90.06664199358161]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -67.54998149518622]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -45.033320996790806]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -22.516660498395403]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 0.0]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 22.516660498395403]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 45.033320996790806]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 67.54998149518622]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 90.06664199358161]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 112.58330249197701]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 135.09996299037243]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 157.61662348876783]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 180.13328398716322]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 202.64994448555862]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 225.16660498395402]) {
+								square(center = true, size = [702, 8]);
 							}
 						}
-						rotate(a = 120) {
-							union() {
-								translate(v = [0, -225.16660498395402]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -202.64994448555862]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -180.13328398716322]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -157.61662348876783]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -135.09996299037243]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -112.58330249197701]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -90.06664199358161]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -67.54998149518622]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -45.033320996790806]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -22.516660498395403]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 0.0]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 22.516660498395403]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 45.033320996790806]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 67.54998149518622]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 90.06664199358161]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 112.58330249197701]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 135.09996299037243]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 157.61662348876783]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 180.13328398716322]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 202.64994448555862]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 225.16660498395402]) {
-									square(center = true, size = [702, 6]);
-								}
+					}
+					rotate(a = 240) {
+						union() {
+							translate(v = [0, -225.16660498395402]) {
+								square(center = true, size = [702, 8]);
 							}
-						}
-						rotate(a = 240) {
-							union() {
-								translate(v = [0, -225.16660498395402]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -202.64994448555862]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -180.13328398716322]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -157.61662348876783]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -135.09996299037243]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -112.58330249197701]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -90.06664199358161]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -67.54998149518622]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -45.033320996790806]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, -22.516660498395403]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 0.0]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 22.516660498395403]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 45.033320996790806]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 67.54998149518622]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 90.06664199358161]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 112.58330249197701]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 135.09996299037243]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 157.61662348876783]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 180.13328398716322]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 202.64994448555862]) {
-									square(center = true, size = [702, 6]);
-								}
-								translate(v = [0, 225.16660498395402]) {
-									square(center = true, size = [702, 6]);
-								}
+							translate(v = [0, -202.64994448555862]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -180.13328398716322]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -157.61662348876783]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -135.09996299037243]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -112.58330249197701]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -90.06664199358161]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -67.54998149518622]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -45.033320996790806]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, -22.516660498395403]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 0.0]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 22.516660498395403]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 45.033320996790806]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 67.54998149518622]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 90.06664199358161]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 112.58330249197701]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 135.09996299037243]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 157.61662348876783]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 180.13328398716322]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 202.64994448555862]) {
+								square(center = true, size = [702, 8]);
+							}
+							translate(v = [0, 225.16660498395402]) {
+								square(center = true, size = [702, 8]);
 							}
 						}
 					}
