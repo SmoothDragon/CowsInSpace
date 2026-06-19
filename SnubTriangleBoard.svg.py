@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import drawsvg as draw
 import random
@@ -345,17 +346,30 @@ def hex_walls_on_edges(i, j, n, R, edge_indices, spacing):
     return segments
 
 
-def random_wall_segments(n, R, spacing, rng):
+def random_wall_config(n, R, spacing, rng):
     """Four non-adjacent interior hexes, one of each 3-edge pattern, random rotations."""
     interior = allowed_interior_hex_indices(n)
     wall_hexes = pick_non_adjacent_hexes(interior, 4, n, rng)
     patterns = THREE_EDGE_PATTERNS[:]
     rng.shuffle(patterns)
     segments = []
+    configs = []
     for hex_idx, pattern in zip(wall_hexes, patterns):
         rotation = rng.randrange(6)
         edges = rotated_pattern_edges(pattern, rotation)
         segments.extend(hex_walls_on_edges(*hex_idx, n, R, edges, spacing))
+        configs.append({
+            'hex': list(hex_idx),
+            'pattern': list(pattern),
+            'rotation': rotation,
+            'edges': edges,
+        })
+    return segments, configs
+
+
+def random_wall_segments(n, R, spacing, rng):
+    """Wall line segments only (see ``random_wall_config`` for placement metadata)."""
+    segments, _ = random_wall_config(n, R, spacing, rng)
     return segments
 
 
@@ -376,12 +390,12 @@ def wall_miter_at_corner(base_a, tangent_a, base_b, tangent_b):
 
 
 def hex_wall_lines(i, j, n, R, edge_idx, spacing, wall_edges):
-    """Five parallel wall lines on one edge of an interior hexagon.
+    """Four parallel wall lines on one edge of an interior hexagon.
 
-    The center line (``k=0``) follows the hex edge.  Lines closer to the hex
-    center are shorter; lines farther from the center are longer.  Five lines
-    are spaced by ``spacing`` on each side of the edge.  Where two wall edges
-    meet, matching offsets join (``k`` meets ``k``) at a miter.
+    The hex edge itself (green etch) is the center line and is not drawn.  Lines
+    closer to the hex center are shorter; lines farther from the center are longer.
+    Four flanking lines are spaced by ``spacing`` on each side of the edge.  Where
+    two wall edges meet, matching offsets join (``k`` meets ``k``) at a miter.
     """
     center = hex_center(i, j, R)
     verts = hex_vertices_at(i, j, R)
@@ -405,7 +419,7 @@ def hex_wall_lines(i, j, n, R, edge_idx, spacing, wall_edges):
     tan30 = np.tan(np.pi / 6)
 
     segments = []
-    for k in (2, 1, 0, -1, -2):
+    for k in (2, 1, -1, -2):
         offset = -k * spacing
         base = v0 + offset * inward
         offset_perp = np.dot(base - edge_mid, inward)
@@ -550,83 +564,290 @@ def add_cutouts(d, pentagons, color, stroke_width):
         d.append(draw.Lines(*coords, close=True, stroke=color, stroke_width=stroke_width, fill='red'))
 
 
-if __name__ == '__main__':
-    cut = 'black'
-    mark = 'green'
-    wall = 'blue'
+def drawing_bbox(polys, wall_segments, margin=20):
+    """Pixel-space bounding box for perimeter polygons and wall segments."""
+    xs = [p[0] * PX_PER_MM for poly in polys for p in poly]
+    ys = [p[1] * PX_PER_MM for poly in polys for p in poly]
+    for a, b in wall_segments:
+        xs.extend([a[0] * PX_PER_MM, b[0] * PX_PER_MM])
+        ys.extend([a[1] * PX_PER_MM, b[1] * PX_PER_MM])
+    minx, miny = min(xs) - margin, min(ys) - margin
+    width = (max(xs) + margin) - minx
+    height_px = (max(ys) + margin) - miny
+    return minx, miny, width, height_px
 
-    interior_side = 8          # full (interior) hexagons along each side
-    tip_clip = 12.0             # mm trimmed off each sharp tip
-    height_in = 11.825         # height of the clipped triangle, in inches
-    num_triangles = 2          # one rightside up and one upside down triangle, sharing an edge
-    cutout_wall_height = 0.8   # mm height of house cutout side walls / snub offset
-    wall_spacing = 1.0         # mm between adjacent wall lines
-    wall_seed = 42             # reproducible random wall placements per triangle
 
-    # The edge rows are half hexagons; the full interior triangle is 3 smaller per
-    # side (one half-hexagon row plus the two shared corners), so add 3.
-    n = interior_side + 3
-    # height_in sets the height of the clipped piece; clipping removes tip_clip from
-    # the apex, so the nominal (through-center) triangle is that much taller.
-    height_mm = height_in * MM_PER_INCH + tip_clip
-    R = height_mm / ((n - 1) * 1.5)        # hexagon circumradius (mm) chosen to hit the height
-    side = (n - 1) * np.sqrt(3) * R
-    height = (n - 1) * 1.5 * R
+def save_triangle_svg(path, poly, etch, cutouts, wall_segments,
+                      cut='black', mark='green', wall='blue'):
+    """Write one snub triangle (perimeter, etch, cutouts, walls) to ``path``."""
+    minx, miny, width, height_px = drawing_bbox([poly], wall_segments)
+    d = draw.Drawing(width, height_px, origin=(minx, miny))
+    add_perimeter(d, poly, cut, stroke_width=5)
+    add_etch(d, etch, mark, stroke_width=3)
+    add_cutouts(d, cutouts, cut, stroke_width=2)
+    add_wall_lines(d, wall_segments, wall, stroke_width=2)
+    d.save_svg(path)
 
-    base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
 
-    rng = random.Random(wall_seed)
-    triangle_wall_segments = [
-        random_wall_segments(n, R, wall_spacing, rng)
-        for _ in range(num_triangles)
-    ]
+# Production wall seeds — frozen at cut time; one distinct layout per panel 1–6.
+PANEL_WALL_SEEDS = {
+    1: 101,
+    2: 202,
+    3: 303,
+    4: 404,
+    5: 505,
+    6: 606,
+}
 
-    # Down-pointing (flip=False) side triangles slide down ALONG their shared long
-    # edge (keeping it collinear, so the edge stays mostly shared) until the snub
-    # nose reaches the same ground plane as the up-pointing triangles' base.  The
-    # slide distance along the edge equals the chamfer length L = 2*tip_clip/sqrt(3),
-    # which drops the nose by exactly tip_clip.
-    center = (num_triangles - 1) / 2
+# Two game panels tessellated on one 1'×2'×⅛" birch ply sheet (24"×12" cut file).
+PANEL_SHEET_GROUPS = [(1, 2), (3, 4), (5, 6)]
+SHEET_WIDTH_IN = 24.0
+SHEET_HEIGHT_IN = 12.0
+SHEET_MARGIN_MM = 6.0
+
+
+def geometry_bbox_mm(polys, wall_segments=()):
+    """Axis-aligned bounding box of polygons and wall segments, in mm."""
+    xs = [p[0] for poly in polys for p in poly]
+    ys = [p[1] for poly in polys for p in poly]
+    for a, b in wall_segments:
+        xs.extend([a[0], b[0]])
+        ys.extend([a[1], b[1]])
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def apply_offset(poly, etch, cutouts, wall_segments, offset):
+    """Translate one triangle's geometry by ``offset`` (mm)."""
+    off = np.asarray(offset, float)
+    poly = [p + off for p in poly]
+    etch = [(a + off, b + off) for a, b in etch]
+    cutouts = [[p + off for p in pent] for pent in cutouts]
+    wall_segments = [(a + off, b + off) for a, b in wall_segments]
+    return poly, etch, cutouts, wall_segments
+
+
+def build_tessellated_pair(base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
+                           panel_ids, wall_spacing, panel_seeds):
+    """Two snub triangles sharing a long edge; distinct wall layout per panel id."""
+    center = 0.5
     slide = 2 * tip_clip / np.sqrt(3)
+    placed = []
+    for m, panel_id in enumerate(panel_ids):
+        seed = panel_seeds[panel_id]
+        rng = random.Random(seed)
+        wall_segments, wall_configs = random_wall_config(n, R, wall_spacing, rng)
 
-    placed = []  # (perimeter_polygon, etch_segments, cutouts) per triangle, in mm
-    wall_segments = []
-    for m in range(num_triangles):
         x0 = m * side / 2
         flip = (m % 2 == 1)
         poly = transform(base_poly, x0, side, height, flip)
         etch = [tuple(transform(seg, x0, side, height, flip)) for seg in base_etch]
         cutouts = [transform(p, x0, side, height, flip) for p in base_cutouts]
+        walls = []
         off = None
         if not flip:
-            sx = -1.0 if m < center else 1.0  # slide along the center-facing edge
+            sx = -1.0 if m < center else 1.0
             off = np.array([sx * slide * 0.5, slide * np.sqrt(3) / 2])
             poly = [p + off for p in poly]
             etch = [(a + off, b + off) for a, b in etch]
             cutouts = [[p + off for p in pent] for pent in cutouts]
-        placed.append((poly, etch, cutouts))
-        for a, b in triangle_wall_segments[m]:
+        for a, b in wall_segments:
             ta = transform([a], x0, side, height, flip)[0]
             tb = transform([b], x0, side, height, flip)[0]
             if off is not None:
                 ta = ta + off
                 tb = tb + off
-            wall_segments.append((ta, tb))
+            walls.append((ta, tb))
+        placed.append((panel_id, poly, etch, cutouts, walls, wall_configs))
+    return placed
 
-    xs = [p[0] * PX_PER_MM for poly, _, _ in placed for p in poly]
-    ys = [p[1] * PX_PER_MM for poly, _, _ in placed for p in poly]
-    for a, b in wall_segments:
-        xs.extend([a[0] * PX_PER_MM, b[0] * PX_PER_MM])
-        ys.extend([a[1] * PX_PER_MM, b[1] * PX_PER_MM])
-    margin = 20
-    minx, miny = min(xs) - margin, min(ys) - margin
-    width = (max(xs) + margin) - minx
-    height_px = (max(ys) + margin) - miny
 
-    d = draw.Drawing(width, height_px, origin=(minx, miny))
-    for poly, etch, cutouts in placed:
+def center_on_sheet(triangles, sheet_width_in, sheet_height_in, margin_mm):
+    """Translate a group of triangles to sit centered on a fixed-size sheet."""
+    polys = [poly for _, poly, _, _, _, _ in triangles]
+    walls = [seg for _, _, _, _, segs, _ in triangles for seg in segs]
+    minx, miny, maxx, maxy = geometry_bbox_mm(polys, walls)
+    pair_w, pair_h = maxx - minx, maxy - miny
+    sheet_w = sheet_width_in * MM_PER_INCH
+    sheet_h = sheet_height_in * MM_PER_INCH
+    inset_x = min(margin_mm, max(0.0, (sheet_w - pair_w) / 2))
+    inset_y = min(margin_mm, max(0.0, (sheet_h - pair_h) / 2))
+    off_x = inset_x + max(0.0, (sheet_w - 2 * inset_x - pair_w) / 2) - minx
+    off_y = inset_y + max(0.0, (sheet_h - 2 * inset_y - pair_h) / 2) - miny
+    offset = np.array([off_x, off_y])
+    centered = []
+    for panel_id, poly, etch, cutouts, walls, configs in triangles:
+        poly, etch, cutouts, walls = apply_offset(poly, etch, cutouts, walls, offset)
+        centered.append((panel_id, poly, etch, cutouts, walls, configs))
+    return centered
+
+
+def save_laser_sheet(path, sheet_width_in, sheet_height_in, triangles,
+                     cut='black', mark='green', wall='blue'):
+    """Write a fixed-size cut sheet with one or more placed triangles."""
+    sheet_w_px = sheet_width_in * MM_PER_INCH * PX_PER_MM
+    sheet_h_px = sheet_height_in * MM_PER_INCH * PX_PER_MM
+    d = draw.Drawing(sheet_w_px, sheet_h_px, origin=(0, 0))
+    for _, poly, etch, cutouts, wall_segments, _ in triangles:
         add_perimeter(d, poly, cut, stroke_width=5)
         add_etch(d, etch, mark, stroke_width=3)
         add_cutouts(d, cutouts, cut, stroke_width=2)
-    add_wall_lines(d, wall_segments, wall, stroke_width=2)
-    d.save_svg('SnubTriangleBoard.svg')
+        add_wall_lines(d, wall_segments, wall, stroke_width=2)
+    d.save_svg(path)
+
+
+def geometry_params(interior_side=8, tip_clip=12.0, height_in=11.825, cutout_wall_height=0.8):
+    """Shared snub-triangle geometry for all production panels."""
+    n = interior_side + 3
+    height_mm = height_in * MM_PER_INCH + tip_clip
+    R = height_mm / ((n - 1) * 1.5)
+    return n, R, tip_clip, cutout_wall_height
+
+
+def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
+                          height_in=11.825, cutout_wall_height=0.8,
+                          wall_spacing=1.0, panel_seeds=PANEL_WALL_SEEDS,
+                          sheet_groups=PANEL_SHEET_GROUPS,
+                          sheet_width_in=SHEET_WIDTH_IN, sheet_height_in=SHEET_HEIGHT_IN,
+                          sheet_margin_mm=SHEET_MARGIN_MM):
+    """Three 24\"×12\" SVG cut files, two tessellated game panels per sheet."""
+    n, R, tip_clip, cutout_wall_height = geometry_params(
+        interior_side, tip_clip, height_in, cutout_wall_height)
+    side = (n - 1) * np.sqrt(3) * R
+    height = (n - 1) * 1.5 * R
+    base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
+
+    manifest = {
+        'interior_side': interior_side,
+        'height_in': height_in,
+        'tip_clip_mm': tip_clip,
+        'cutout_wall_height_mm': cutout_wall_height,
+        'wall_spacing_mm': wall_spacing,
+        'material': '1/8" birch plywood',
+        'sheet_size_in': [sheet_width_in, sheet_height_in],
+        'sheet_margin_mm': sheet_margin_mm,
+        'panels': {},
+        'sheets': {},
+    }
+
+    for panel_id in sorted(panel_seeds):
+        seed = panel_seeds[panel_id]
+        rng = random.Random(seed)
+        _, wall_configs = random_wall_config(n, R, wall_spacing, rng)
+        manifest['panels'][str(panel_id)] = {
+            'wall_seed': seed,
+            'walls': wall_configs,
+        }
+
+    for sheet_idx, panel_ids in enumerate(sheet_groups, start=1):
+        pair = build_tessellated_pair(
+            base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
+            panel_ids, wall_spacing, panel_seeds)
+        centered = center_on_sheet(pair, sheet_width_in, sheet_height_in, sheet_margin_mm)
+        path = f'{output_dir}/SnubTriangleBoard-sheet-{sheet_idx}.svg'
+        save_laser_sheet(path, sheet_width_in, sheet_height_in, centered)
+        svg_name = path.split('/')[-1]
+        manifest['sheets'][str(sheet_idx)] = {
+            'svg': svg_name,
+            'panels': list(panel_ids),
+        }
+        for panel_id, _, _, _, _, wall_configs in centered:
+            manifest['panels'][str(panel_id)]['sheet'] = sheet_idx
+            manifest['panels'][str(panel_id)]['svg'] = svg_name
+            manifest['panels'][str(panel_id)]['walls'] = wall_configs
+
+    manifest_path = f'{output_dir}/SnubTriangleBoard-panels.json'
+    with open(manifest_path, 'w', encoding='utf-8') as f:
+        json.dump(manifest, f, indent=2)
+        f.write('\n')
+    return manifest
+
+
+def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
+                               height_in=11.825, cutout_wall_height=0.8,
+                               wall_spacing=1.0, panel_seeds=PANEL_WALL_SEEDS):
+    """Six single-triangle SVGs with identical geometry and distinct wall layouts."""
+    n, R, tip_clip, cutout_wall_height = geometry_params(
+        interior_side, tip_clip, height_in, cutout_wall_height)
+    base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
+
+    manifest = {
+        'interior_side': interior_side,
+        'height_in': height_in,
+        'tip_clip_mm': tip_clip,
+        'cutout_wall_height_mm': cutout_wall_height,
+        'wall_spacing_mm': wall_spacing,
+        'panels': {},
+    }
+
+    for panel_id in sorted(panel_seeds):
+        seed = panel_seeds[panel_id]
+        rng = random.Random(seed)
+        wall_segments, wall_configs = random_wall_config(n, R, wall_spacing, rng)
+        path = f'{output_dir}/SnubTriangleBoard-panel-{panel_id}.svg'
+        save_triangle_svg(path, base_poly, base_etch, base_cutouts, wall_segments)
+        manifest['panels'][str(panel_id)] = {
+            'wall_seed': seed,
+            'svg': path.split('/')[-1],
+            'walls': wall_configs,
+        }
+
+    manifest_path = f'{output_dir}/SnubTriangleBoard-panels.json'
+    with open(manifest_path, 'w', encoding='utf-8') as f:
+        json.dump(manifest, f, indent=2)
+        f.write('\n')
+    return manifest
+
+
+def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_clip=12.0,
+                      height_in=11.825, cutout_wall_height=0.8, wall_spacing=1.0,
+                      wall_seed=42):
+    """Two tessellated snub triangles (up/down) for layout preview."""
+    cut = 'black'
+    mark = 'green'
+    wall = 'blue'
+
+    n, R, tip_clip, cutout_wall_height = geometry_params(
+        interior_side, tip_clip, height_in, cutout_wall_height)
+    side = (n - 1) * np.sqrt(3) * R
+    height = (n - 1) * 1.5 * R
+    base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
+
+    # Sequential seeds from one base for quick visual comparison.
+    dev_seeds = {1: wall_seed, 2: wall_seed + 1}
+    pair = build_tessellated_pair(
+        base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
+        [1, 2], wall_spacing, dev_seeds)
+
+    polys = [poly for _, poly, _, _, _, _ in pair]
+    walls = [seg for _, _, _, _, segs, _ in pair for seg in segs]
+    minx, miny, width, height_px = drawing_bbox(polys, walls)
+    d = draw.Drawing(width, height_px, origin=(minx, miny))
+    for _, poly, etch, cutouts, wall_segments, _ in pair:
+        add_perimeter(d, poly, cut, stroke_width=5)
+        add_etch(d, etch, mark, stroke_width=3)
+        add_cutouts(d, cutouts, cut, stroke_width=2)
+        add_wall_lines(d, wall_segments, wall, stroke_width=2)
+    d.save_svg(output_path)
+
+
+if __name__ == '__main__':
+    interior_side = 8
+    tip_clip = 12.0
+    height_in = 11.825
+    cutout_wall_height = 0.8
+    wall_spacing = 1.0
+
+    generate_laser_sheets(
+        interior_side=interior_side,
+        tip_clip=tip_clip,
+        height_in=height_in,
+        cutout_wall_height=cutout_wall_height,
+        wall_spacing=wall_spacing,
+    )
+    generate_dev_pair(
+        interior_side=interior_side,
+        tip_clip=tip_clip,
+        height_in=height_in,
+        cutout_wall_height=cutout_wall_height,
+        wall_spacing=wall_spacing,
+    )
