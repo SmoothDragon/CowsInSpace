@@ -1,0 +1,21 @@
+---
+description: Flying cow mascot character design for Cows in Space
+alwaysApply: true
+---
+
+# Flying Cow (Cows in Space mascot)
+
+Full reference: `CHARACTER.md` and `CowsInSpace-box-cover.png`.
+
+When designing cow pieces, art, icons, or box materials, use this character:
+
+- **Body:** Nearly perfect sphere; Holstein black-and-white patches on white base — a ball with cow parts, not a stretched cow
+- **Face:** Small head on top; large brown eyes with white highlights; pink snout; open happy smile; cream horns; black ears (pink inside)
+- **Limbs:** Four stubby legs, black hooves, tucked for zero-g; short tail with black tuft
+- **Space gear:** Clear glass bubble helmet (no opaque visor); thick silver collar with small glowing blue lights/rivets
+- **Style:** Bright cel-shaded 3D cartoon, kart-racer / family-friendly; joyful, adventurous, confident
+- **Motion (illustration):** Flying tilt; optional blue/purple/orange/yellow speed trails — playful, not violent
+- **Avoid:** Realistic fur, horror, mean expressions, generic balls without cow identity
+- **Miniature priority:** Eyes, snout, helmet, patch contrast must read at table scale
+- **Brand:** Hex motif belongs in environment (board, moon, stars) — keep the cow clean and iconic
+- **Must match:** `spherical_cow.stl` / card icon (`CowsInSpace.png`) family
