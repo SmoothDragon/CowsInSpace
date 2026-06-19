@@ -162,10 +162,75 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 - [x] Game logo and box art (“Cows in Space”) — `CowsInSpace-box-cover.png` (square lid art, 2048×2048)
 - [x] Mascot character bible — `CHARACTER.md` (flying cow from box art)
+- [ ] **Decide on a name for the flying space cow** (see §7.1)
 - [ ] Card frame/template polish (`CowsInSpace.tex`, `graphics/`)
 - [ ] Rulebook layout and illustrations (hub assembly, example layouts)
 - [ ] Icon set consistency (cow symbol `\COW`, existing `graphics/` assets)
 - [ ] Style guide for splotch patterns matching card/pack art
+
+### 7.1 Flying space cow — name (open)
+
+**Task:** Decide on a name for the flying space cow mascot (`CHARACTER.md`, box art). The cow may stay a silent logo or appear in rulebook flavor text — name style should match that role.
+
+**Top picks** (balanced: fun, readable, on-brand):
+
+| Name | Notes |
+|------|--------|
+| **Orbita** | Distinctive, spacey, not too silly |
+| **Astro Moo** | Instant read for kids/families |
+| **Capsule** | Matches the bubble helmet visually |
+| **Zoomoo** | Matches the flying / kart-racer pose |
+| **Bessie-7** | Warm + sci-fi call sign |
+
+**Physics & space puns**
+
+- **Orbita** / **Orbit** — always circling the board
+- **Moony** — ties to the hub moon
+- **Vector** — path-finding energy
+- **Delta-V** — rocket Δv; sounds like a call sign
+- **Capsule** — space capsule + cow in a bubble
+- **Vacuum** — spherical cow in vacuum (dry humor)
+- **Apogee** — peak of the arc / winning the round
+
+**Cow + space mashups**
+
+- **Astro Moo**
+- **Luna Belle** — moon + classic cow name
+- **Cosmo Clover**
+- **Nova Bessie**
+- **Star Holstein**
+- **Milk Way**
+
+**Kart-racer / hero energy**
+
+- **Rocket Bess**
+- **Zoomoo**
+- **Helmet Hal**
+- **Turbo Tilda**
+- **Warp Whitney**
+
+**Classic cow names, space twist**
+
+- **Bessie-7**
+- **Daisy Orbit**
+- **Buttercup Zero-G**
+- **Clarabelle Comet**
+
+**One-word mascots** (logo-friendly)
+
+- **Moofo** — moo + UFO
+- **Sphera** — sphere + hero suffix
+- **Helio**
+- **Nebula**
+- **Pip** — if leaning into dice/pip splotches on pieces
+
+**In-joke / designer nod**
+
+- **Spherical** — literal “spherical cow” joke
+- **Frictionless** — nods to prototype filenames
+- **Ideal** — idealized physics model cow
+
+**Guidance:** Short one-word names (**Orbita**, **Capsule**, **Zoomoo**) suit a silent box mascot; **Astro Moo** or **Bessie-7** suit flavor text or a named hero in the rulebook.
 
 ---
 
@@ -273,6 +338,10 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 - [ ] Final modifier deck content and editing pass
 - [ ] Box contents list
 
+**Art & identity**
+
+- [ ] Name for the flying space cow mascot (§7.1)
+
 **Business**
 
 - [ ] License strategy for retail
@@ -300,7 +369,8 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 7. **Digital edition** (Tabletop Simulator / print-and-play PDF only)?
 8. **Hub attachment** (magnets, friction fit, flush vs. lip) and whether numbers 1–6 fix orientation or slot identity only.
 9. **Perimeter wrap** consistency across panels for Space Curvature card.
+10. **Flying space cow name** — pick from §7.1 suggestions (or shortlist + playtest readability).
 
 ---
 
-*Last updated: decisions on panels, core loop, and walls integrated.*
+*Last updated: mascot name suggestions added (§7.1).*
