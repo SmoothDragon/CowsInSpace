@@ -1,6 +1,6 @@
 # Flying Cow — Character Description
 
-Mascot and box-cover hero for **Cows in Space**. Reference art: `CowsInSpace-box-cover.png`. Full-body character sheet: `CowsInSpace-flying-cow-fullbody.png`.
+Mascot and box-cover hero for **Cows in Space**. Reference art: `CowsInSpace-box-cover.png`. Full-body character sheet: `CowsInSpace-flying-cow-fullbody.png`. Laser etch art (transparent grayscale): `CowsInSpace-flying-cow-etch.png` — preview on white: `CowsInSpace-flying-cow-etch-on-white.png`.
 
 Use this document for 3D cow pieces (`spherical_cow.stl`), illustration, iconography, and vendor briefs.
 
