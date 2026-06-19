@@ -367,6 +367,71 @@ def random_wall_config(n, R, spacing, rng):
     return segments, configs
 
 
+def _board_hex_rotation_maps(n, R):
+    """Map allowed interior hex (i, j) under 0°/120°/240° rotation about triangle centroid."""
+    allowed = set(allowed_interior_hex_indices(n))
+    centroid = np.mean(triangle_corners(n, R), axis=0)
+    centers = {
+        (i, j): hex_center(i, j, R)
+        for j in range(n)
+        for i in range(n - j)
+        if (i, j) in allowed
+    }
+
+    def rotate_pt(p, deg):
+        th = np.deg2rad(deg)
+        c, s = np.cos(th), np.sin(th)
+        v = np.asarray(p, float) - centroid
+        return np.array([c * v[0] - s * v[1], s * v[0] + c * v[1]]) + centroid
+
+    def nearest_hex(pt):
+        best, best_d = None, float('inf')
+        for h in allowed:
+            d = np.linalg.norm(centers[h] - pt)
+            if d < best_d:
+                best_d, best = d, h
+        return best
+
+    maps = []
+    for deg in (0, 120, 240):
+        maps.append({h: nearest_hex(rotate_pt(centers[h], deg)) for h in allowed})
+    return maps
+
+
+def canonical_wall_form(wall_configs, n, R):
+    """Lexicographically smallest wall layout over 120° board rotations."""
+    tuples = [(tuple(w['hex']), tuple(sorted(w['edges']))) for w in wall_configs]
+    forms = []
+    for steps, hmap in enumerate(_board_hex_rotation_maps(n, R)):
+        items = []
+        for h, edges in tuples:
+            e2 = tuple(sorted((e + 2 * steps) % 6 for e in edges))
+            items.append((hmap[h], e2))
+        forms.append(tuple(sorted(items)))
+    return min(forms)
+
+
+def find_distinct_wall_seeds(existing_seeds, n, R, spacing, count=6, start=701):
+    """Pick ``count`` seeds whose layouts are unique vs ``existing_seeds`` up to rotation."""
+    existing = set()
+    for seed in existing_seeds.values():
+        rng = random.Random(seed)
+        _, cfg = random_wall_config(n, R, spacing, rng)
+        existing.add(canonical_wall_form(cfg, n, R))
+
+    found = {}
+    seed = start
+    while len(found) < count:
+        rng = random.Random(seed)
+        _, cfg = random_wall_config(n, R, spacing, rng)
+        canon = canonical_wall_form(cfg, n, R)
+        if canon not in existing:
+            existing.add(canon)
+            found[len(found) + 1] = seed
+        seed += 1
+    return found
+
+
 def random_wall_segments(n, R, spacing, rng):
     """Wall line segments only (see ``random_wall_config`` for placement metadata)."""
     segments, _ = random_wall_config(n, R, spacing, rng)
@@ -591,6 +656,16 @@ PANEL_WALL_SEEDS = {
     6: 606,
 }
 
+# Back-side etch layouts: distinct from front panels up to 120° board rotation.
+SHEETBACK_WALL_SEEDS = {
+    1: 701,
+    2: 702,
+    3: 703,
+    4: 704,
+    5: 705,
+    6: 706,
+}
+
 # Birch ply: nominal 1'×2' (24"×12") stock, but actual size is 1/8" less per dimension.
 SHEET_NOMINAL_WIDTH_IN = 24.0
 SHEET_NOMINAL_HEIGHT_IN = 12.0
@@ -716,15 +791,16 @@ def center_on_sheet(triangles, sheet_width_in, sheet_height_in,
 
 
 def save_laser_sheet(path, sheet_width_in, sheet_height_in, triangles,
-                     cut='black', mark='green', wall='green'):
+                     cut='black', mark='green', wall='green', *, etch_only=False):
     """Write a fixed-size cut sheet with one or more placed triangles."""
     sheet_w_px = sheet_width_in * MM_PER_INCH * PX_PER_MM
     sheet_h_px = sheet_height_in * MM_PER_INCH * PX_PER_MM
     d = draw.Drawing(sheet_w_px, sheet_h_px, origin=(0, 0))
     for _, poly, etch, cutouts, wall_segments, _ in triangles:
-        add_perimeter(d, poly, cut, stroke_width=5)
+        if not etch_only:
+            add_perimeter(d, poly, cut, stroke_width=5)
+            add_cutouts(d, cutouts, cut, stroke_width=2)
         add_etch(d, etch, mark, stroke_width=3)
-        add_cutouts(d, cutouts, cut, stroke_width=2)
         add_wall_lines(d, wall_segments, wall, stroke_width=2)
     d.save_svg(path)
 
@@ -810,6 +886,92 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
     return manifest
 
 
+def generate_sheetback_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
+                                height_in=None, cutout_wall_height=0.8,
+                                wall_spacing=WALL_SPACING_MM,
+                                panel_seeds=SHEETBACK_WALL_SEEDS,
+                                front_seeds=PANEL_WALL_SEEDS,
+                                sheet_groups=PANEL_SHEET_GROUPS,
+                                sheet_width_in=SHEET_WIDTH_IN, sheet_height_in=SHEET_HEIGHT_IN,
+                                vertical_gap_mm=SHEET_VERTICAL_GAP_MM,
+                                horizontal_margin_mm=SHEET_HORIZONTAL_MARGIN_MM,
+                                pair_gap_mm=SHEET_PAIR_GAP_MM):
+    """Three etch-only back-side sheets (flip board after cut; no perimeter or cutouts)."""
+    if height_in is None:
+        height_in = height_in_for_vertical_gap(
+            sheet_height_in, vertical_gap_mm, interior_side, tip_clip, cutout_wall_height,
+            pair_gap_mm)
+    n, R, tip_clip, cutout_wall_height = geometry_params(
+        interior_side, tip_clip, height_in, cutout_wall_height)
+    side = (n - 1) * np.sqrt(3) * R
+    height = (n - 1) * 1.5 * R
+    base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
+
+    # Validate back layouts are distinct from fronts (up to board rotation).
+    front_canonical = set()
+    for seed in front_seeds.values():
+        rng = random.Random(seed)
+        _, cfg = random_wall_config(n, R, wall_spacing, rng)
+        front_canonical.add(canonical_wall_form(cfg, n, R))
+    for panel_id, seed in panel_seeds.items():
+        rng = random.Random(seed)
+        _, cfg = random_wall_config(n, R, wall_spacing, rng)
+        canon = canonical_wall_form(cfg, n, R)
+        if canon in front_canonical:
+            raise ValueError(
+                f'sheetback panel {panel_id} seed {seed} matches a front panel up to rotation')
+        front_canonical.add(canon)
+
+    sheetbacks = {}
+    sheetback_panels = {}
+
+    for panel_id in sorted(panel_seeds):
+        seed = panel_seeds[panel_id]
+        rng = random.Random(seed)
+        _, wall_configs = random_wall_config(n, R, wall_spacing, rng)
+        sheetback_panels[str(panel_id)] = {
+            'wall_seed': seed,
+            'front_panel': panel_id,
+            'walls': wall_configs,
+        }
+
+    for sheet_idx, panel_ids in enumerate(sheet_groups, start=1):
+        pair = build_tessellated_pair(
+            base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
+            panel_ids, wall_spacing, panel_seeds, pair_gap_mm=pair_gap_mm)
+        centered = center_on_sheet(
+            pair, sheet_width_in, sheet_height_in, vertical_gap_mm, horizontal_margin_mm)
+        path = f'{output_dir}/SnubTriangleBoard-sheetback-{sheet_idx}.svg'
+        save_laser_sheet(path, sheet_width_in, sheet_height_in, centered, etch_only=True)
+        svg_name = path.split('/')[-1]
+        sheetbacks[str(sheet_idx)] = {
+            'svg': svg_name,
+            'panels': list(panel_ids),
+            'pairs_with_front_sheet': sheet_idx,
+        }
+        for panel_id, _, _, _, _, wall_configs in centered:
+            sheetback_panels[str(panel_id)]['sheetback'] = sheet_idx
+            sheetback_panels[str(panel_id)]['svg'] = svg_name
+            sheetback_panels[str(panel_id)]['walls'] = wall_configs
+
+    return {
+        'sheetbacks': sheetbacks,
+        'sheetback_panels': sheetback_panels,
+        'sheetback_wall_seeds': dict(panel_seeds),
+    }
+
+
+def merge_sheetback_manifest(sheetback_info, manifest_path='SnubTriangleBoard-panels.json'):
+    """Add sheetback section to an existing production manifest."""
+    with open(manifest_path, encoding='utf-8') as f:
+        manifest = json.load(f)
+    manifest.update(sheetback_info)
+    with open(manifest_path, 'w', encoding='utf-8') as f:
+        json.dump(manifest, f, indent=2)
+        f.write('\n')
+    return manifest
+
+
 def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
                                height_in=None, cutout_wall_height=0.8,
                                wall_spacing=WALL_SPACING_MM, panel_seeds=PANEL_WALL_SEEDS,
@@ -886,12 +1048,19 @@ if __name__ == '__main__':
     cutout_wall_height = 0.8
     wall_spacing = WALL_SPACING_MM
 
-    generate_laser_sheets(
+    manifest = generate_laser_sheets(
         interior_side=interior_side,
         tip_clip=tip_clip,
         cutout_wall_height=cutout_wall_height,
         wall_spacing=wall_spacing,
     )
+    sheetback_info = generate_sheetback_sheets(
+        interior_side=interior_side,
+        tip_clip=tip_clip,
+        cutout_wall_height=cutout_wall_height,
+        wall_spacing=wall_spacing,
+    )
+    merge_sheetback_manifest(sheetback_info)
     generate_production_panels(
         interior_side=interior_side,
         tip_clip=tip_clip,
