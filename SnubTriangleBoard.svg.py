@@ -284,6 +284,90 @@ def line_line_intersection(p, d, q, e, eps=1e-12):
 # Distinct ways to choose three hex edges, up to rotation (one representative each).
 THREE_EDGE_PATTERNS = [(0, 1, 2), (0, 1, 3), (0, 1, 4), (0, 2, 4)]
 
+# Pip count 1–4 labels wall-pattern types (non-adjacent → 1, all adjacent → 3, etc.).
+PATTERN_PIP_COUNT = {
+    (0, 2, 4): 1,  # three non-adjacent edges
+    (0, 1, 3): 2,
+    (0, 1, 2): 3,  # three adjacent edges
+    (0, 1, 4): 4,
+}
+
+PIP_SIZE_FRAC = 1 / 8           # pip diameter / hex vertex diameter (2R)
+PIP_SINGLE_SCALE = 1.5          # label-1 hex uses a larger lone pip
+PIP_TWO_SPAN_FRAC = 0.4         # two-pip spacing as fraction of vertex diameter
+PIP_THREE_ARM_FRAC = 0.45       # radial placement / R for 3-pip outers
+PIP_FOUR_ARM_FRAC = 0.55        # radial placement / R for 4-pip outers
+PIP_COLOR = 'orange'
+
+
+def pattern_pip_count(pattern):
+    """Return pip count 1–4 for a three-edge wall pattern representative."""
+    key = tuple(sorted(pattern))
+    try:
+        return PATTERN_PIP_COUNT[key]
+    except KeyError as exc:
+        raise ValueError(f'unknown wall pattern {pattern}') from exc
+
+
+def hex_vertex_direction(vertex_index):
+    """Unit vector from hex center toward vertex ``vertex_index``."""
+    a = HEX_ANGLES[vertex_index % 6]
+    return np.array([np.cos(a), np.sin(a)])
+
+
+def pip_marks_for_hex(i, j, n, R, pattern, rotation,
+                      pip_size_frac=PIP_SIZE_FRAC,
+                      single_pip_scale=PIP_SINGLE_SCALE,
+                      two_pip_span_frac=PIP_TWO_SPAN_FRAC,
+                      three_arm_frac=PIP_THREE_ARM_FRAC,
+                      four_arm_frac=PIP_FOUR_ARM_FRAC):
+    """Orange pip circles for one walled interior hex, aligned with wall rotation."""
+    center = np.asarray(hex_center(i, j, R), float)
+    count = pattern_pip_count(pattern)
+    base_radius = pip_size_frac * R
+    marks = []
+
+    if count == 1:
+        marks.append((center, base_radius * single_pip_scale))
+    elif count == 2:
+        axis = hex_vertex_direction(rotation)
+        half_sep = two_pip_span_frac * R
+        marks.append((center + half_sep * axis, base_radius))
+        marks.append((center - half_sep * axis, base_radius))
+    elif count == 3:
+        for k in range(3):
+            axis = hex_vertex_direction(rotation + 2 * k)
+            marks.append((center + three_arm_frac * R * axis, base_radius))
+    elif count == 4:
+        for k in range(3):
+            axis = hex_vertex_direction(rotation + 2 * k)
+            marks.append((center + four_arm_frac * R * axis, base_radius))
+        marks.append((center, base_radius))
+    else:
+        raise ValueError(f'unsupported pip count {count}')
+    return marks
+
+
+def wall_pip_marks(n, R, wall_configs, **pip_kwargs):
+    """Pip marks for all walled hexes described by ``wall_configs``."""
+    marks = []
+    for cfg in wall_configs:
+        i, j = cfg['hex']
+        marks.extend(pip_marks_for_hex(
+            i, j, n, R, cfg['pattern'], cfg['rotation'], **pip_kwargs))
+    return marks
+
+
+def transform_pip_marks(pip_marks, x0, side, height, flip, offset=None):
+    """Place pip marks into a tessellated triangle."""
+    out = []
+    for center, radius in pip_marks:
+        p = transform([center], x0, side, height, flip)[0]
+        if offset is not None:
+            p = p + offset
+        out.append((p, radius))
+    return out
+
 
 def hex_neighbors(i, j, n):
     """Grid neighbors of hex (i, j) in the triangular packing."""
@@ -358,11 +442,14 @@ def random_wall_config(n, R, spacing, rng):
         rotation = rng.randrange(6)
         edges = rotated_pattern_edges(pattern, rotation)
         segments.extend(hex_walls_on_edges(*hex_idx, n, R, edges, spacing))
+        label = pattern_pip_count(pattern)
         configs.append({
             'hex': list(hex_idx),
             'pattern': list(pattern),
             'rotation': rotation,
             'edges': edges,
+            'label': label,
+            'pip_count': label,
         })
     return segments, configs
 
@@ -511,6 +598,15 @@ def add_wall_lines(d, segments, color, stroke_width):
                            stroke=color, stroke_width=stroke_width, fill='none'))
 
 
+def add_pip_marks(d, pip_marks, color=PIP_COLOR):
+    """Draw filled pip circles (center_mm, radius_mm)."""
+    for center, radius in pip_marks:
+        d.append(draw.Circle(
+            center[0] * PX_PER_MM, center[1] * PX_PER_MM,
+            radius * PX_PER_MM,
+            fill=color, stroke='none'))
+
+
 def chamfer_polygon(corners, tip_clip):
     """Clip each sharp tip of the triangle, returning a CCW convex polygon.
 
@@ -565,6 +661,27 @@ def clip_segment(p0, p1, poly):
     return q0, q1
 
 
+SEGMENT_DEDUP_DECIMALS = 3  # mm; merges shared hex edges clipped with float noise
+
+
+def segment_dedup_key(q0, q1, decimals=SEGMENT_DEDUP_DECIMALS):
+    """Direction-independent key for line segment deduplication."""
+    return tuple(sorted((tuple(np.round(q0, decimals)), tuple(np.round(q1, decimals)))))
+
+
+def dedupe_segments(segments, decimals=SEGMENT_DEDUP_DECIMALS):
+    """Drop duplicate line segments (same endpoints up to ``decimals`` mm)."""
+    seen = set()
+    out = []
+    for q0, q1 in segments:
+        key = segment_dedup_key(q0, q1, decimals)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((np.asarray(q0, float), np.asarray(q1, float)))
+    return out
+
+
 def snub_triangle(n, R, tip_clip, cutout_wall_height):
     """Build one snub triangle, returning (perimeter_polygon, etch_segments, cutouts) in mm."""
     poly = chamfer_polygon(triangle_corners(n, R), tip_clip)
@@ -576,7 +693,7 @@ def snub_triangle(n, R, tip_clip, cutout_wall_height):
         if clipped is None:
             continue
         q0, q1 = clipped
-        key = tuple(sorted((tuple(np.round(q0, 4)), tuple(np.round(q1, 4)))))
+        key = segment_dedup_key(q0, q1)
         if key in seen:
             continue
         seen.add(key)
@@ -607,7 +724,7 @@ def add_perimeter(d, poly, color, stroke_width):
 
 
 def add_etch(d, segments, color, stroke_width):
-    for q0, q1 in segments:
+    for q0, q1 in dedupe_segments(segments):
         d.append(draw.Line(q0[0] * PX_PER_MM, q0[1] * PX_PER_MM,
                            q1[0] * PX_PER_MM, q1[1] * PX_PER_MM,
                            stroke=color, stroke_width=stroke_width, fill='none'))
@@ -621,28 +738,33 @@ def add_cutouts(d, pentagons, color, stroke_width):
         d.append(draw.Lines(*coords, close=True, stroke=color, stroke_width=stroke_width, fill='red'))
 
 
-def drawing_bbox(polys, wall_segments, margin=20):
-    """Pixel-space bounding box for perimeter polygons and wall segments."""
+def drawing_bbox(polys, wall_segments, pip_marks=(), margin=20):
+    """Pixel-space bounding box for perimeter polygons, walls, and pip marks."""
     xs = [p[0] * PX_PER_MM for poly in polys for p in poly]
     ys = [p[1] * PX_PER_MM for poly in polys for p in poly]
     for a, b in wall_segments:
         xs.extend([a[0] * PX_PER_MM, b[0] * PX_PER_MM])
         ys.extend([a[1] * PX_PER_MM, b[1] * PX_PER_MM])
+    for center, radius in pip_marks:
+        rpx = radius * PX_PER_MM
+        xs.extend([center[0] * PX_PER_MM - rpx, center[0] * PX_PER_MM + rpx])
+        ys.extend([center[1] * PX_PER_MM - rpx, center[1] * PX_PER_MM + rpx])
     minx, miny = min(xs) - margin, min(ys) - margin
     width = (max(xs) + margin) - minx
     height_px = (max(ys) + margin) - miny
     return minx, miny, width, height_px
 
 
-def save_triangle_svg(path, poly, etch, cutouts, wall_segments,
+def save_triangle_svg(path, poly, etch, cutouts, wall_segments, pip_marks=(),
                       cut='black', mark='green', wall='green'):
-    """Write one snub triangle (perimeter, etch, cutouts, walls) to ``path``."""
-    minx, miny, width, height_px = drawing_bbox([poly], wall_segments)
+    """Write one snub triangle (perimeter, etch, cutouts, walls, pips) to ``path``."""
+    minx, miny, width, height_px = drawing_bbox([poly], wall_segments, pip_marks)
     d = draw.Drawing(width, height_px, origin=(minx, miny))
     add_perimeter(d, poly, cut, stroke_width=5)
     add_etch(d, etch, mark, stroke_width=3)
     add_cutouts(d, cutouts, cut, stroke_width=2)
     add_wall_lines(d, wall_segments, wall, stroke_width=2)
+    add_pip_marks(d, pip_marks)
     d.save_svg(path)
 
 
@@ -689,14 +811,15 @@ def geometry_bbox_mm(polys, wall_segments=()):
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def apply_offset(poly, etch, cutouts, wall_segments, offset):
+def apply_offset(poly, etch, cutouts, wall_segments, offset, pip_marks=()):
     """Translate one triangle's geometry by ``offset`` (mm)."""
     off = np.asarray(offset, float)
     poly = [p + off for p in poly]
     etch = [(a + off, b + off) for a, b in etch]
     cutouts = [[p + off for p in pent] for pent in cutouts]
     wall_segments = [(a + off, b + off) for a, b in wall_segments]
-    return poly, etch, cutouts, wall_segments
+    pip_marks = [(np.asarray(p, float) + off, r) for p, r in pip_marks]
+    return poly, etch, cutouts, wall_segments, pip_marks
 
 
 def build_tessellated_pair(base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
@@ -734,7 +857,9 @@ def build_tessellated_pair(base_poly, base_etch, base_cutouts, n, R, side, heigh
                 ta = ta + off
                 tb = tb + off
             walls.append((ta, tb))
-        placed.append((panel_id, poly, etch, cutouts, walls, wall_configs))
+        pips = transform_pip_marks(
+            wall_pip_marks(n, R, wall_configs), x0, side, height, flip, off)
+        placed.append((panel_id, poly, etch, cutouts, walls, wall_configs, pips))
     return placed
 
 
@@ -749,8 +874,8 @@ def tessellated_pair_bbox_mm(height_in, interior_side=8, tip_clip=12.0, cutout_w
     pair = build_tessellated_pair(
         base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
         [1, 2], 1.0, PANEL_WALL_SEEDS, pair_gap_mm=pair_gap_mm)
-    polys = [poly for _, poly, _, _, _, _ in pair]
-    walls = [seg for _, _, _, _, segs, _ in pair for seg in segs]
+    polys = [poly for _, poly, _, _, _, _, _ in pair]
+    walls = [seg for _, _, _, _, segs, _, _ in pair for seg in segs]
     return geometry_bbox_mm(polys, walls)
 
 
@@ -774,8 +899,8 @@ def center_on_sheet(triangles, sheet_width_in, sheet_height_in,
                     vertical_gap_mm=SHEET_VERTICAL_GAP_MM,
                     horizontal_margin_mm=SHEET_HORIZONTAL_MARGIN_MM):
     """Place a triangle group on the sheet with fixed vertical inset and centered horizontally."""
-    polys = [poly for _, poly, _, _, _, _ in triangles]
-    walls = [seg for _, _, _, _, segs, _ in triangles for seg in segs]
+    polys = [poly for _, poly, _, _, _, _, _ in triangles]
+    walls = [seg for _, _, _, _, segs, _, _ in triangles for seg in segs]
     minx, miny, maxx, maxy = geometry_bbox_mm(polys, walls)
     pair_w = maxx - minx
     sheet_w = sheet_width_in * MM_PER_INCH
@@ -784,9 +909,10 @@ def center_on_sheet(triangles, sheet_width_in, sheet_height_in,
     off_y = vertical_gap_mm - miny
     offset = np.array([off_x, off_y])
     centered = []
-    for panel_id, poly, etch, cutouts, walls, configs in triangles:
-        poly, etch, cutouts, walls = apply_offset(poly, etch, cutouts, walls, offset)
-        centered.append((panel_id, poly, etch, cutouts, walls, configs))
+    for panel_id, poly, etch, cutouts, walls, configs, pip_marks in triangles:
+        poly, etch, cutouts, walls, pip_marks = apply_offset(
+            poly, etch, cutouts, walls, offset, pip_marks)
+        centered.append((panel_id, poly, etch, cutouts, walls, configs, pip_marks))
     return centered
 
 
@@ -796,12 +922,13 @@ def save_laser_sheet(path, sheet_width_in, sheet_height_in, triangles,
     sheet_w_px = sheet_width_in * MM_PER_INCH * PX_PER_MM
     sheet_h_px = sheet_height_in * MM_PER_INCH * PX_PER_MM
     d = draw.Drawing(sheet_w_px, sheet_h_px, origin=(0, 0))
-    for _, poly, etch, cutouts, wall_segments, _ in triangles:
+    for _, poly, etch, cutouts, wall_segments, _, pip_marks in triangles:
         if not etch_only:
             add_perimeter(d, poly, cut, stroke_width=5)
             add_cutouts(d, cutouts, cut, stroke_width=2)
         add_etch(d, etch, mark, stroke_width=3)
         add_wall_lines(d, wall_segments, wall, stroke_width=2)
+        add_pip_marks(d, pip_marks)
     d.save_svg(path)
 
 
@@ -841,6 +968,12 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
         'tip_clip_mm': tip_clip,
         'cutout_wall_height_mm': cutout_wall_height,
         'wall_spacing_mm': wall_spacing,
+        'pip_size_frac': PIP_SIZE_FRAC,
+        'pip_single_scale': PIP_SINGLE_SCALE,
+        'pip_two_span_frac': PIP_TWO_SPAN_FRAC,
+        'pip_three_arm_frac': PIP_THREE_ARM_FRAC,
+        'pip_four_arm_frac': PIP_FOUR_ARM_FRAC,
+        'pip_color': PIP_COLOR,
         'material': '1/8" birch plywood',
         'sheet_nominal_size_in': [SHEET_NOMINAL_WIDTH_IN, SHEET_NOMINAL_HEIGHT_IN],
         'sheet_trim_in': SHEET_TRIM_IN,
@@ -874,7 +1007,7 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
             'svg': svg_name,
             'panels': list(panel_ids),
         }
-        for panel_id, _, _, _, _, wall_configs in centered:
+        for panel_id, _, _, _, _, wall_configs, _ in centered:
             manifest['panels'][str(panel_id)]['sheet'] = sheet_idx
             manifest['panels'][str(panel_id)]['svg'] = svg_name
             manifest['panels'][str(panel_id)]['walls'] = wall_configs
@@ -949,7 +1082,7 @@ def generate_sheetback_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
             'panels': list(panel_ids),
             'pairs_with_front_sheet': sheet_idx,
         }
-        for panel_id, _, _, _, _, wall_configs in centered:
+        for panel_id, _, _, _, _, wall_configs, _ in centered:
             sheetback_panels[str(panel_id)]['sheetback'] = sheet_idx
             sheetback_panels[str(panel_id)]['svg'] = svg_name
             sheetback_panels[str(panel_id)]['walls'] = wall_configs
@@ -987,6 +1120,12 @@ def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
         'tip_clip_mm': tip_clip,
         'cutout_wall_height_mm': cutout_wall_height,
         'wall_spacing_mm': wall_spacing,
+        'pip_size_frac': PIP_SIZE_FRAC,
+        'pip_single_scale': PIP_SINGLE_SCALE,
+        'pip_two_span_frac': PIP_TWO_SPAN_FRAC,
+        'pip_three_arm_frac': PIP_THREE_ARM_FRAC,
+        'pip_four_arm_frac': PIP_FOUR_ARM_FRAC,
+        'pip_color': PIP_COLOR,
         'panels': {},
     }
 
@@ -994,8 +1133,9 @@ def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
         seed = panel_seeds[panel_id]
         rng = random.Random(seed)
         wall_segments, wall_configs = random_wall_config(n, R, wall_spacing, rng)
+        pip_marks = wall_pip_marks(n, R, wall_configs)
         path = f'{output_dir}/SnubTriangleBoard-panel-{panel_id}.svg'
-        save_triangle_svg(path, base_poly, base_etch, base_cutouts, wall_segments)
+        save_triangle_svg(path, base_poly, base_etch, base_cutouts, wall_segments, pip_marks)
         manifest['panels'][str(panel_id)] = {
             'wall_seed': seed,
             'svg': path.split('/')[-1],
@@ -1030,15 +1170,16 @@ def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_
         base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
         [1, 2], wall_spacing, dev_seeds)
 
-    polys = [poly for _, poly, _, _, _, _ in pair]
-    walls = [seg for _, _, _, _, segs, _ in pair for seg in segs]
+    polys = [poly for _, poly, _, _, _, _, _ in pair]
+    walls = [seg for _, _, _, _, segs, _, _ in pair for seg in segs]
     minx, miny, width, height_px = drawing_bbox(polys, walls)
     d = draw.Drawing(width, height_px, origin=(minx, miny))
-    for _, poly, etch, cutouts, wall_segments, _ in pair:
+    for _, poly, etch, cutouts, wall_segments, _, pip_marks in pair:
         add_perimeter(d, poly, cut, stroke_width=5)
         add_etch(d, etch, mark, stroke_width=3)
         add_cutouts(d, cutouts, cut, stroke_width=2)
         add_wall_lines(d, wall_segments, wall, stroke_width=2)
+        add_pip_marks(d, pip_marks)
     d.save_svg(output_path)
 
 
