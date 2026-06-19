@@ -599,11 +599,16 @@ PANEL_WALL_SEEDS = {
     6: 606,
 }
 
-# Two game panels tessellated on one 1'×2'×⅛" birch ply sheet (24"×12" cut file).
+# Birch ply: nominal 1'×2' (24"×12") stock, but actual size is 1/8" less per dimension.
+SHEET_NOMINAL_WIDTH_IN = 24.0
+SHEET_NOMINAL_HEIGHT_IN = 12.0
+SHEET_TRIM_IN = 0.125
+SHEET_WIDTH_IN = SHEET_NOMINAL_WIDTH_IN - SHEET_TRIM_IN   # 23.875"
+SHEET_HEIGHT_IN = SHEET_NOMINAL_HEIGHT_IN - SHEET_TRIM_IN  # 11.875"
 PANEL_SHEET_GROUPS = [(1, 2), (3, 4), (5, 6)]
-SHEET_WIDTH_IN = 24.0
-SHEET_HEIGHT_IN = 12.0
-SHEET_MARGIN_MM = 6.0
+SHEET_VERTICAL_GAP_MM = 5.0    # top and bottom: triangle to sheet edge
+SHEET_HORIZONTAL_MARGIN_MM = 6.0
+SHEET_PAIR_GAP_MM = 10.0       # horizontal gap between the two panels on a sheet (1 cm)
 
 
 def geometry_bbox_mm(polys, wall_segments=()):
@@ -627,8 +632,12 @@ def apply_offset(poly, etch, cutouts, wall_segments, offset):
 
 
 def build_tessellated_pair(base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
-                           panel_ids, wall_spacing, panel_seeds):
-    """Two snub triangles sharing a long edge; distinct wall layout per panel id."""
+                           panel_ids, wall_spacing, panel_seeds, pair_gap_mm=0.0):
+    """Two snub triangles on one sheet; distinct wall layout per panel id.
+
+    The second triangle is shifted ``pair_gap_mm`` further in +x (horizontal) from
+    the usual tessellated placement to leave a gap between the pair.
+    """
     center = 0.5
     slide = 2 * tip_clip / np.sqrt(3)
     placed = []
@@ -637,7 +646,7 @@ def build_tessellated_pair(base_poly, base_etch, base_cutouts, n, R, side, heigh
         rng = random.Random(seed)
         wall_segments, wall_configs = random_wall_config(n, R, wall_spacing, rng)
 
-        x0 = m * side / 2
+        x0 = m * side / 2 + m * pair_gap_mm
         flip = (m % 2 == 1)
         poly = transform(base_poly, x0, side, height, flip)
         etch = [tuple(transform(seg, x0, side, height, flip)) for seg in base_etch]
@@ -661,18 +670,50 @@ def build_tessellated_pair(base_poly, base_etch, base_cutouts, n, R, side, heigh
     return placed
 
 
-def center_on_sheet(triangles, sheet_width_in, sheet_height_in, margin_mm):
-    """Translate a group of triangles to sit centered on a fixed-size sheet."""
+def tessellated_pair_bbox_mm(height_in, interior_side=8, tip_clip=12.0, cutout_wall_height=0.8,
+                             pair_gap_mm=SHEET_PAIR_GAP_MM):
+    """Bounding box (mm) of two panels tessellated with ``pair_gap_mm`` horizontal offset."""
+    n, R, tip_clip, cutout_wall_height = geometry_params(
+        interior_side, tip_clip, height_in, cutout_wall_height)
+    side = (n - 1) * np.sqrt(3) * R
+    height = (n - 1) * 1.5 * R
+    base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
+    pair = build_tessellated_pair(
+        base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
+        [1, 2], 1.0, PANEL_WALL_SEEDS, pair_gap_mm=pair_gap_mm)
+    polys = [poly for _, poly, _, _, _, _ in pair]
+    walls = [seg for _, _, _, _, segs, _ in pair for seg in segs]
+    return geometry_bbox_mm(polys, walls)
+
+
+def height_in_for_vertical_gap(sheet_height_in, vertical_gap_mm, interior_side=8, tip_clip=12.0,
+                               cutout_wall_height=0.8, pair_gap_mm=SHEET_PAIR_GAP_MM):
+    """``height_in`` so a tessellated pair has ``vertical_gap_mm`` to top and bottom sheet edges."""
+    target_h = sheet_height_in * MM_PER_INCH - 2 * vertical_gap_mm
+    lo, hi = 8.0, 14.0
+    for _ in range(50):
+        mid = (lo + hi) / 2
+        minx, miny, maxx, maxy = tessellated_pair_bbox_mm(
+            mid, interior_side, tip_clip, cutout_wall_height, pair_gap_mm)
+        if maxy - miny > target_h:
+            hi = mid
+        else:
+            lo = mid
+    return (lo + hi) / 2
+
+
+def center_on_sheet(triangles, sheet_width_in, sheet_height_in,
+                    vertical_gap_mm=SHEET_VERTICAL_GAP_MM,
+                    horizontal_margin_mm=SHEET_HORIZONTAL_MARGIN_MM):
+    """Place a triangle group on the sheet with fixed vertical inset and centered horizontally."""
     polys = [poly for _, poly, _, _, _, _ in triangles]
     walls = [seg for _, _, _, _, segs, _ in triangles for seg in segs]
     minx, miny, maxx, maxy = geometry_bbox_mm(polys, walls)
-    pair_w, pair_h = maxx - minx, maxy - miny
+    pair_w = maxx - minx
     sheet_w = sheet_width_in * MM_PER_INCH
-    sheet_h = sheet_height_in * MM_PER_INCH
-    inset_x = min(margin_mm, max(0.0, (sheet_w - pair_w) / 2))
-    inset_y = min(margin_mm, max(0.0, (sheet_h - pair_h) / 2))
+    inset_x = min(horizontal_margin_mm, max(0.0, (sheet_w - pair_w) / 2))
     off_x = inset_x + max(0.0, (sheet_w - 2 * inset_x - pair_w) / 2) - minx
-    off_y = inset_y + max(0.0, (sheet_h - 2 * inset_y - pair_h) / 2) - miny
+    off_y = vertical_gap_mm - miny
     offset = np.array([off_x, off_y])
     centered = []
     for panel_id, poly, etch, cutouts, walls, configs in triangles:
@@ -695,8 +736,11 @@ def save_laser_sheet(path, sheet_width_in, sheet_height_in, triangles,
     d.save_svg(path)
 
 
-def geometry_params(interior_side=8, tip_clip=12.0, height_in=11.825, cutout_wall_height=0.8):
+def geometry_params(interior_side=8, tip_clip=12.0, height_in=None, cutout_wall_height=0.8):
     """Shared snub-triangle geometry for all production panels."""
+    if height_in is None:
+        height_in = height_in_for_vertical_gap(
+            SHEET_HEIGHT_IN, SHEET_VERTICAL_GAP_MM, interior_side, tip_clip, cutout_wall_height)
     n = interior_side + 3
     height_mm = height_in * MM_PER_INCH + tip_clip
     R = height_mm / ((n - 1) * 1.5)
@@ -704,12 +748,18 @@ def geometry_params(interior_side=8, tip_clip=12.0, height_in=11.825, cutout_wal
 
 
 def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
-                          height_in=11.825, cutout_wall_height=0.8,
+                          height_in=None, cutout_wall_height=0.8,
                           wall_spacing=1.0, panel_seeds=PANEL_WALL_SEEDS,
                           sheet_groups=PANEL_SHEET_GROUPS,
                           sheet_width_in=SHEET_WIDTH_IN, sheet_height_in=SHEET_HEIGHT_IN,
-                          sheet_margin_mm=SHEET_MARGIN_MM):
-    """Three 24\"×12\" SVG cut files, two tessellated game panels per sheet."""
+                          vertical_gap_mm=SHEET_VERTICAL_GAP_MM,
+                          horizontal_margin_mm=SHEET_HORIZONTAL_MARGIN_MM,
+                          pair_gap_mm=SHEET_PAIR_GAP_MM):
+    """Three laser-cut SVG files sized to actual birch sheet, two panels per file."""
+    if height_in is None:
+        height_in = height_in_for_vertical_gap(
+            sheet_height_in, vertical_gap_mm, interior_side, tip_clip, cutout_wall_height,
+            pair_gap_mm)
     n, R, tip_clip, cutout_wall_height = geometry_params(
         interior_side, tip_clip, height_in, cutout_wall_height)
     side = (n - 1) * np.sqrt(3) * R
@@ -723,8 +773,12 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
         'cutout_wall_height_mm': cutout_wall_height,
         'wall_spacing_mm': wall_spacing,
         'material': '1/8" birch plywood',
+        'sheet_nominal_size_in': [SHEET_NOMINAL_WIDTH_IN, SHEET_NOMINAL_HEIGHT_IN],
+        'sheet_trim_in': SHEET_TRIM_IN,
         'sheet_size_in': [sheet_width_in, sheet_height_in],
-        'sheet_margin_mm': sheet_margin_mm,
+        'vertical_gap_mm': vertical_gap_mm,
+        'horizontal_margin_mm': horizontal_margin_mm,
+        'pair_gap_mm': pair_gap_mm,
         'panels': {},
         'sheets': {},
     }
@@ -741,8 +795,9 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
     for sheet_idx, panel_ids in enumerate(sheet_groups, start=1):
         pair = build_tessellated_pair(
             base_poly, base_etch, base_cutouts, n, R, side, height, tip_clip,
-            panel_ids, wall_spacing, panel_seeds)
-        centered = center_on_sheet(pair, sheet_width_in, sheet_height_in, sheet_margin_mm)
+            panel_ids, wall_spacing, panel_seeds, pair_gap_mm=pair_gap_mm)
+        centered = center_on_sheet(
+            pair, sheet_width_in, sheet_height_in, vertical_gap_mm, horizontal_margin_mm)
         path = f'{output_dir}/SnubTriangleBoard-sheet-{sheet_idx}.svg'
         save_laser_sheet(path, sheet_width_in, sheet_height_in, centered)
         svg_name = path.split('/')[-1]
@@ -763,7 +818,7 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
 
 
 def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
-                               height_in=11.825, cutout_wall_height=0.8,
+                               height_in=None, cutout_wall_height=0.8,
                                wall_spacing=1.0, panel_seeds=PANEL_WALL_SEEDS):
     """Six single-triangle SVGs with identical geometry and distinct wall layouts."""
     n, R, tip_clip, cutout_wall_height = geometry_params(
@@ -799,7 +854,7 @@ def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
 
 
 def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_clip=12.0,
-                      height_in=11.825, cutout_wall_height=0.8, wall_spacing=1.0,
+                      height_in=None, cutout_wall_height=0.8, wall_spacing=1.0,
                       wall_seed=42):
     """Two tessellated snub triangles (up/down) for layout preview."""
     cut = 'black'
@@ -833,21 +888,18 @@ def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_
 if __name__ == '__main__':
     interior_side = 8
     tip_clip = 12.0
-    height_in = 11.825
     cutout_wall_height = 0.8
     wall_spacing = 1.0
 
     generate_laser_sheets(
         interior_side=interior_side,
         tip_clip=tip_clip,
-        height_in=height_in,
         cutout_wall_height=cutout_wall_height,
         wall_spacing=wall_spacing,
     )
     generate_dev_pair(
         interior_side=interior_side,
         tip_clip=tip_clip,
-        height_in=height_in,
         cutout_wall_height=cutout_wall_height,
         wall_spacing=wall_spacing,
     )

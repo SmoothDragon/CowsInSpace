@@ -29,13 +29,13 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
   - **Cut:** black perimeter, red corner house cutouts
   - **Etch:** green interior hex edges
   - **Walls:** blue interior wall lines (4 lines per walled edge; center line omitted so green shows through)
-  - Parameters: `interior_side = 8`, `height_in ≈ 11.825"`, `tip_clip`, wall randomization via `wall_seed`
+  - Parameters: `interior_side = 8`, `height_in ≈ 11.48"` (auto-fit for 5 mm vertical sheet margin), `tip_clip`, wall randomization via `wall_seed`
 - Current output packs **two** snub triangles per SVG (one up, one down, sharing a long edge).
 - **Six panels** form the full field; each panel is the same snub-triangle **shape and size**, but **wall placement differs** per panel (see §2.3). Rotations and hub slot assignment multiply layout variety.
 
 ### 2.2 Work needed
 
-- [ ] **Laser sheet SVGs** — three 24″×12″ cut files, two tessellated panels per 1′×2′×⅛″ birch ply sheet (see §2.3).
+- [ ] **Laser sheet SVGs** — three cut files sized to **23.875″×11.875″** actual birch (nominal 1′×2′ minus ⅛″ per dimension), two panels per sheet (see §2.3).
 - [x] **Wall manifest** — six documented `wall_seed` values; record hex, pattern, and rotation per panel (`SnubTriangleBoard-panels.json`).
 - [ ] **Panel labeling:** subtle etched ID (1–6) on non-play face or edge, aligned with hub numbering.
 - [ ] **Assembly diagram:** how six triangles meet at the hub (clockwise numbering, which corner points inward).
@@ -46,7 +46,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 **Panel geometry and walls (decided):** Six laser-cut panels from `SnubTriangleBoard.svg.py` with **identical geometry** (same `interior_side`, `height_in`, `tip_clip`, perimeter, corner cutouts, and hex grid). The only intentional cut/etch variation between panels is the **placement of the four walled interior hexes** — each panel gets a **different random** assignment (four non-adjacent allowed-interior hexes, one of each 3-wall pattern, random rotation), frozen at production time via a distinct `wall_seed` per panel 1–6.
 
-**Production implication:** Generate **three laser-cut SVG files** (`SnubTriangleBoard-sheet-1.svg` … `-3.svg`), each sized for **24″×12″** (1′×2′ plywood laid with the long edge horizontal). Two snub triangles tessellate on each sheet (~21″×11.8″ footprint, 6 mm margin). Panel pairs: **1+2**, **3+4**, **5+6**. Identical board geometry; distinct `wall_seed` per panel. Manifest: `SnubTriangleBoard-panels.json`.
+**Production implication:** Generate **three laser-cut SVG files** (`SnubTriangleBoard-sheet-1.svg` … `-3.svg`), each sized for the **actual** birch sheet **23.875″×11.875″** (nominal 1′×2′ stock is ⅛″ undersize in both dimensions; long edge horizontal). Two snub triangles per sheet with **10 mm** horizontal gap between panels and **5 mm** top/bottom margin. Panel pairs: **1+2**, **3+4**, **5+6**. `height_in` is computed to fit vertical margins. Manifest: `SnubTriangleBoard-panels.json`.
 
 **Material (decided):** ⅛″ birch plywood; kerf compensation TBD at cut time.
 
@@ -317,7 +317,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 **Board**
 
-- [ ] Three production laser sheet SVGs (panels 1+2, 3+4, 5+6 on 24″×12″)
+- [ ] Three production laser sheet SVGs (panels 1+2, 3+4, 5+6 on 23.875″×11.875″)
 - [ ] Material + kerf spec
 - [ ] Panel numbering / alignment with hub
 
