@@ -578,7 +578,7 @@ def drawing_bbox(polys, wall_segments, margin=20):
 
 
 def save_triangle_svg(path, poly, etch, cutouts, wall_segments,
-                      cut='black', mark='green', wall='blue'):
+                      cut='black', mark='green', wall='green'):
     """Write one snub triangle (perimeter, etch, cutouts, walls) to ``path``."""
     minx, miny, width, height_px = drawing_bbox([poly], wall_segments)
     d = draw.Drawing(width, height_px, origin=(minx, miny))
@@ -723,7 +723,7 @@ def center_on_sheet(triangles, sheet_width_in, sheet_height_in,
 
 
 def save_laser_sheet(path, sheet_width_in, sheet_height_in, triangles,
-                     cut='black', mark='green', wall='blue'):
+                     cut='black', mark='green', wall='green'):
     """Write a fixed-size cut sheet with one or more placed triangles."""
     sheet_w_px = sheet_width_in * MM_PER_INCH * PX_PER_MM
     sheet_h_px = sheet_height_in * MM_PER_INCH * PX_PER_MM
@@ -859,7 +859,7 @@ def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_
     """Two tessellated snub triangles (up/down) for layout preview."""
     cut = 'black'
     mark = 'green'
-    wall = 'blue'
+    wall = 'green'
 
     n, R, tip_clip, cutout_wall_height = geometry_params(
         interior_side, tip_clip, height_in, cutout_wall_height)

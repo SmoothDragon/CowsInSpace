@@ -28,7 +28,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
   - Pointy-top hex grid clipped to an equilateral snub triangle
   - **Cut:** black perimeter, red corner house cutouts
   - **Etch:** green interior hex edges
-  - **Walls:** blue interior wall lines (4 lines per walled edge; center line omitted so green shows through)
+  - **Walls:** green interior wall lines (4 lines per walled edge; center hex edge omitted so grid shows through)
   - Parameters: `interior_side = 8`, `height_in ≈ 11.48"` (auto-fit for 5 mm vertical sheet margin), `tip_clip`, wall randomization via `wall_seed`
 - Current output packs **two** snub triangles per SVG (one up, one down, sharing a long edge).
 - **Six panels** form the full field; each panel is the same snub-triangle **shape and size**, but **wall placement differs** per panel (see §2.3). Rotations and hub slot assignment multiply layout variety.
