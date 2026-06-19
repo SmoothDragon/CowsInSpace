@@ -550,11 +550,6 @@ def add_cutouts(d, pentagons, color, stroke_width):
         d.append(draw.Lines(*coords, close=True, stroke=color, stroke_width=stroke_width, fill='red'))
 
 
-def add_hex_marker(d, center_mm, radius_px, stroke, stroke_width, fill='red'):
-    d.append(draw.Circle(center_mm[0] * PX_PER_MM, center_mm[1] * PX_PER_MM,
-                         radius_px, stroke=stroke, stroke_width=stroke_width, fill=fill))
-
-
 if __name__ == '__main__':
     cut = 'black'
     mark = 'green'
@@ -566,7 +561,7 @@ if __name__ == '__main__':
     num_triangles = 2          # one rightside up and one upside down triangle, sharing an edge
     cutout_wall_height = 0.8   # mm height of house cutout side walls / snub offset
     wall_spacing = 1.0         # mm between adjacent wall lines
-    wall_seed = 42             # reproducible random interior hex / edge for testing
+    wall_seed = 42             # reproducible random wall placements per triangle
 
     # The edge rows are half hexagons; the full interior triangle is 3 smaller per
     # side (one half-hexagon row plus the two shared corners), so add 3.
@@ -581,11 +576,10 @@ if __name__ == '__main__':
     base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
 
     rng = random.Random(wall_seed)
-    allowed_interior = allowed_interior_hex_indices(n)
-    wall_hex = rng.choice(allowed_interior)
-    wall_edge = rng.randrange(6)
-    test_walls = hex_wall_lines(*wall_hex, n, R, wall_edge, wall_spacing, set())
-    disallowed_centers = [hex_center(*h, R) for h in disallowed_wall_hex_indices(n)]
+    triangle_wall_segments = [
+        random_wall_segments(n, R, wall_spacing, rng)
+        for _ in range(num_triangles)
+    ]
 
     # Down-pointing (flip=False) side triangles slide down ALONG their shared long
     # edge (keeping it collinear, so the edge stays mostly shared) until the snub
@@ -597,7 +591,6 @@ if __name__ == '__main__':
 
     placed = []  # (perimeter_polygon, etch_segments, cutouts) per triangle, in mm
     wall_segments = []
-    disallowed_markers = []
     for m in range(num_triangles):
         x0 = m * side / 2
         flip = (m % 2 == 1)
@@ -612,30 +605,19 @@ if __name__ == '__main__':
             etch = [(a + off, b + off) for a, b in etch]
             cutouts = [[p + off for p in pent] for pent in cutouts]
         placed.append((poly, etch, cutouts))
-        if m == 0:
-            for c in disallowed_centers:
-                p = transform([c], x0, side, height, flip)[0]
-                if off is not None:
-                    p = p + off
-                disallowed_markers.append(p)
-            for a, b in test_walls:
-                ta = transform([a], x0, side, height, flip)[0]
-                tb = transform([b], x0, side, height, flip)[0]
-                if off is not None:
-                    ta = ta + off
-                    tb = tb + off
-                wall_segments.append((ta, tb))
+        for a, b in triangle_wall_segments[m]:
+            ta = transform([a], x0, side, height, flip)[0]
+            tb = transform([b], x0, side, height, flip)[0]
+            if off is not None:
+                ta = ta + off
+                tb = tb + off
+            wall_segments.append((ta, tb))
 
     xs = [p[0] * PX_PER_MM for poly, _, _ in placed for p in poly]
     ys = [p[1] * PX_PER_MM for poly, _, _ in placed for p in poly]
     for a, b in wall_segments:
         xs.extend([a[0] * PX_PER_MM, b[0] * PX_PER_MM])
         ys.extend([a[1] * PX_PER_MM, b[1] * PX_PER_MM])
-    marker_r = 10
-    for p in disallowed_markers:
-        cx, cy = p[0] * PX_PER_MM, p[1] * PX_PER_MM
-        xs.extend([cx - marker_r, cx + marker_r])
-        ys.extend([cy - marker_r, cy + marker_r])
     margin = 20
     minx, miny = min(xs) - margin, min(ys) - margin
     width = (max(xs) + margin) - minx
@@ -647,6 +629,4 @@ if __name__ == '__main__':
         add_etch(d, etch, mark, stroke_width=3)
         add_cutouts(d, cutouts, cut, stroke_width=2)
     add_wall_lines(d, wall_segments, wall, stroke_width=2)
-    for p in disallowed_markers:
-        add_hex_marker(d, p, radius_px=10, stroke=cut, stroke_width=2, fill='pink')
     d.save_svg('SnubTriangleBoard.svg')
