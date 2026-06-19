@@ -401,11 +401,6 @@ def hex_wall_lines(i, j, n, R, edge_idx, spacing, wall_edges):
     verts = hex_vertices_at(i, j, R)
     v0, v1, tangent, inward = hex_edge_geometry(verts, edge_idx, center)
 
-    v_prev = verts[(edge_idx - 1) % 6]
-    v_next = verts[(edge_idx + 2) % 6]
-    d0 = inward_edge_direction(v0, v_prev, center)
-    d1 = inward_edge_direction(v1, v_next, center)
-
     prev_edge = (edge_idx - 1) % 6
     next_edge = (edge_idx + 1) % 6
     prev_wall = prev_edge in wall_edges
@@ -423,20 +418,17 @@ def hex_wall_lines(i, j, n, R, edge_idx, spacing, wall_edges):
         offset = -k * spacing
         base = v0 + offset * inward
         offset_perp = np.dot(base - edge_mid, inward)
+        mid = base + np.dot(edge_mid - base, tangent) * tangent
+        half_len = edge_len / 2 - offset_perp * tan30
 
-        if prev_wall or next_wall:
-            if prev_wall:
-                a = wall_miter_at_corner(base, tangent, v0 + offset * n_prev, t_prev)
-            else:
-                a = line_line_intersection(base, tangent, v0, d0)
-            if next_wall:
-                b = wall_miter_at_corner(base, tangent, v1 + offset * n_next, t_next)
-            else:
-                b = line_line_intersection(base, tangent, v1, d1)
+        if prev_wall:
+            a = wall_miter_at_corner(base, tangent, v0 + offset * n_prev, t_prev)
         else:
-            mid = base + np.dot(edge_mid - base, tangent) * tangent
-            half_len = edge_len / 2 - offset_perp * tan30
             a = mid - half_len * tangent
+
+        if next_wall:
+            b = wall_miter_at_corner(base, tangent, v1 + offset * n_next, t_next)
+        else:
             b = mid + half_len * tangent
 
         if a is None or b is None:
@@ -609,6 +601,7 @@ PANEL_SHEET_GROUPS = [(1, 2), (3, 4), (5, 6)]
 SHEET_VERTICAL_GAP_MM = 5.0    # top and bottom: triangle to sheet edge
 SHEET_HORIZONTAL_MARGIN_MM = 6.0
 SHEET_PAIR_GAP_MM = 10.0       # horizontal gap between the two panels on a sheet (1 cm)
+WALL_SPACING_MM = 0.5
 
 
 def geometry_bbox_mm(polys, wall_segments=()):
@@ -749,7 +742,7 @@ def geometry_params(interior_side=8, tip_clip=12.0, height_in=None, cutout_wall_
 
 def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
                           height_in=None, cutout_wall_height=0.8,
-                          wall_spacing=1.0, panel_seeds=PANEL_WALL_SEEDS,
+                          wall_spacing=WALL_SPACING_MM, panel_seeds=PANEL_WALL_SEEDS,
                           sheet_groups=PANEL_SHEET_GROUPS,
                           sheet_width_in=SHEET_WIDTH_IN, sheet_height_in=SHEET_HEIGHT_IN,
                           vertical_gap_mm=SHEET_VERTICAL_GAP_MM,
@@ -819,7 +812,8 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
 
 def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
                                height_in=None, cutout_wall_height=0.8,
-                               wall_spacing=1.0, panel_seeds=PANEL_WALL_SEEDS):
+                               wall_spacing=WALL_SPACING_MM, panel_seeds=PANEL_WALL_SEEDS,
+                               write_manifest=True):
     """Six single-triangle SVGs with identical geometry and distinct wall layouts."""
     n, R, tip_clip, cutout_wall_height = geometry_params(
         interior_side, tip_clip, height_in, cutout_wall_height)
@@ -847,14 +841,15 @@ def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
         }
 
     manifest_path = f'{output_dir}/SnubTriangleBoard-panels.json'
-    with open(manifest_path, 'w', encoding='utf-8') as f:
-        json.dump(manifest, f, indent=2)
-        f.write('\n')
+    if write_manifest:
+        with open(manifest_path, 'w', encoding='utf-8') as f:
+            json.dump(manifest, f, indent=2)
+            f.write('\n')
     return manifest
 
 
 def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_clip=12.0,
-                      height_in=None, cutout_wall_height=0.8, wall_spacing=1.0,
+                      height_in=None, cutout_wall_height=0.8, wall_spacing=WALL_SPACING_MM,
                       wall_seed=42):
     """Two tessellated snub triangles (up/down) for layout preview."""
     cut = 'black'
@@ -889,13 +884,20 @@ if __name__ == '__main__':
     interior_side = 8
     tip_clip = 12.0
     cutout_wall_height = 0.8
-    wall_spacing = 1.0
+    wall_spacing = WALL_SPACING_MM
 
     generate_laser_sheets(
         interior_side=interior_side,
         tip_clip=tip_clip,
         cutout_wall_height=cutout_wall_height,
         wall_spacing=wall_spacing,
+    )
+    generate_production_panels(
+        interior_side=interior_side,
+        tip_clip=tip_clip,
+        cutout_wall_height=cutout_wall_height,
+        wall_spacing=wall_spacing,
+        write_manifest=False,
     )
     generate_dev_pair(
         interior_side=interior_side,
