@@ -1,5 +1,6 @@
 import numpy as np
 import drawsvg as draw
+import random
 
 # 96 dpi => pixels per millimeter, matching the ~3.78 factor used by TriangleBoard.svg.py
 PX_PER_MM = 96 / 25.4
@@ -245,6 +246,200 @@ def corner_cutouts(n, R, tip_clip, wall_height):
     return pentagons
 
 
+def interior_hex_indices(n):
+    """Grid (i, j) indices of full interior hexagons (not on the triangle edge)."""
+    indices = []
+    for j in range(n):
+        for i in range(n - j):
+            if j == 0 or i == 0 or i == n - 1 - j:
+                continue
+            indices.append((i, j))
+    return indices
+
+
+def hex_vertices_at(i, j, R):
+    """Vertices of the hexagon at grid position (i, j)."""
+    return hexagon(R) + hex_center(i, j, R)
+
+
+def inward_edge_direction(vertex, neighbor, center):
+    """Unit direction along a hex edge, from ``vertex`` toward ``center``."""
+    d = np.asarray(neighbor, float) - np.asarray(vertex, float)
+    if np.dot(d, np.asarray(center, float) - vertex) < 0:
+        d = -d
+    return d / np.linalg.norm(d)
+
+
+def line_line_intersection(p, d, q, e, eps=1e-12):
+    """Intersection of lines ``p`` + t*``d`` and ``q`` + u*``e``."""
+    p, d, q, e = map(lambda x: np.asarray(x, float), (p, d, q, e))
+    denom = d[0] * e[1] - d[1] * e[0]
+    if abs(denom) < eps:
+        return None
+    t = ((q[0] - p[0]) * e[1] - (q[1] - p[1]) * e[0]) / denom
+    return p + t * d
+
+
+# Distinct ways to choose three hex edges, up to rotation (one representative each).
+THREE_EDGE_PATTERNS = [(0, 1, 2), (0, 1, 3), (0, 1, 4), (0, 2, 4)]
+
+
+def hex_neighbors(i, j, n):
+    """Grid neighbors of hex (i, j) in the triangular packing."""
+    candidates = [(i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1),
+                  (i - 1, j + 1), (i + 1, j - 1)]
+    return [p for p in candidates if 0 <= p[1] < n and 0 <= p[0] < n - p[1]]
+
+
+def hexes_adjacent(a, b, n):
+    return b in hex_neighbors(*a, n)
+
+
+def interior_triangle_vertex_indices(n):
+    """Three corner hexes of the triangle of full interior hexagons."""
+    return [(1, 1), (n - 3, 1), (1, n - 3)]
+
+
+def disallowed_wall_hex_indices(n):
+    """Interior triangle corners and the six interior hexes adjacent to them."""
+    interior = set(interior_hex_indices(n))
+    disallowed = set(interior_triangle_vertex_indices(n))
+    for v in interior_triangle_vertex_indices(n):
+        for nb in hex_neighbors(*v, n):
+            if nb in interior:
+                disallowed.add(nb)
+    return sorted(disallowed)
+
+
+def allowed_interior_hex_indices(n):
+    """Interior hexes eligible for random wall placement."""
+    disallowed = set(disallowed_wall_hex_indices(n))
+    return [h for h in interior_hex_indices(n) if h not in disallowed]
+
+
+def pick_non_adjacent_hexes(candidates, count, n, rng, attempts=500):
+    """Pick ``count`` mutually non-adjacent hexes from ``candidates``."""
+    for _ in range(attempts):
+        shuffled = candidates[:]
+        rng.shuffle(shuffled)
+        chosen = []
+        for h in shuffled:
+            if all(not hexes_adjacent(h, c, n) for c in chosen):
+                chosen.append(h)
+            if len(chosen) == count:
+                return chosen
+    raise RuntimeError(f"could not pick {count} non-adjacent interior hexagons")
+
+
+def rotated_pattern_edges(pattern, rotation):
+    """Apply a 6-fold rotation to a three-edge wall pattern."""
+    return [(e + rotation) % 6 for e in pattern]
+
+
+def hex_walls_on_edges(i, j, n, R, edge_indices, spacing):
+    """Wall line segments for multiple edges of one interior hexagon."""
+    wall_edges = set(edge_indices)
+    segments = []
+    for edge_idx in edge_indices:
+        segments.extend(hex_wall_lines(i, j, n, R, edge_idx, spacing, wall_edges))
+    return segments
+
+
+def random_wall_segments(n, R, spacing, rng):
+    """Four non-adjacent interior hexes, one of each 3-edge pattern, random rotations."""
+    interior = allowed_interior_hex_indices(n)
+    wall_hexes = pick_non_adjacent_hexes(interior, 4, n, rng)
+    patterns = THREE_EDGE_PATTERNS[:]
+    rng.shuffle(patterns)
+    segments = []
+    for hex_idx, pattern in zip(wall_hexes, patterns):
+        rotation = rng.randrange(6)
+        edges = rotated_pattern_edges(pattern, rotation)
+        segments.extend(hex_walls_on_edges(*hex_idx, n, R, edges, spacing))
+    return segments
+
+
+def hex_edge_geometry(verts, edge_idx, center):
+    """Vertices, tangent, and inward normal for one hex edge."""
+    v0 = verts[edge_idx]
+    v1 = verts[(edge_idx + 1) % 6]
+    tangent = (v1 - v0) / np.linalg.norm(v1 - v0)
+    inward = np.array([-tangent[1], tangent[0]])
+    if np.dot(inward, center - (v0 + v1) / 2) < 0:
+        inward = -inward
+    return v0, v1, tangent, inward
+
+
+def wall_miter_at_corner(base_a, tangent_a, base_b, tangent_b):
+    """Where mirrored offset wall lines on two edges meeting at a vertex cross."""
+    return line_line_intersection(base_a, tangent_a, base_b, tangent_b)
+
+
+def hex_wall_lines(i, j, n, R, edge_idx, spacing, wall_edges):
+    """Five parallel wall lines on one edge of an interior hexagon.
+
+    The center line (``k=0``) follows the hex edge.  Lines closer to the hex
+    center are shorter; lines farther from the center are longer.  Five lines
+    are spaced by ``spacing`` on each side of the edge.  Where two wall edges
+    meet, matching offsets join (``k`` meets ``k``) at a miter.
+    """
+    center = hex_center(i, j, R)
+    verts = hex_vertices_at(i, j, R)
+    v0, v1, tangent, inward = hex_edge_geometry(verts, edge_idx, center)
+
+    v_prev = verts[(edge_idx - 1) % 6]
+    v_next = verts[(edge_idx + 2) % 6]
+    d0 = inward_edge_direction(v0, v_prev, center)
+    d1 = inward_edge_direction(v1, v_next, center)
+
+    prev_edge = (edge_idx - 1) % 6
+    next_edge = (edge_idx + 1) % 6
+    prev_wall = prev_edge in wall_edges
+    next_wall = next_edge in wall_edges
+
+    _, _, t_prev, n_prev = hex_edge_geometry(verts, prev_edge, center)
+    _, _, t_next, n_next = hex_edge_geometry(verts, next_edge, center)
+
+    edge_mid = (v0 + v1) / 2
+    edge_len = np.linalg.norm(v1 - v0)
+    tan30 = np.tan(np.pi / 6)
+
+    segments = []
+    for k in (2, 1, 0, -1, -2):
+        offset = -k * spacing
+        base = v0 + offset * inward
+        offset_perp = np.dot(base - edge_mid, inward)
+
+        if prev_wall or next_wall:
+            if prev_wall:
+                a = wall_miter_at_corner(base, tangent, v0 + offset * n_prev, t_prev)
+            else:
+                a = line_line_intersection(base, tangent, v0, d0)
+            if next_wall:
+                b = wall_miter_at_corner(base, tangent, v1 + offset * n_next, t_next)
+            else:
+                b = line_line_intersection(base, tangent, v1, d1)
+        else:
+            mid = base + np.dot(edge_mid - base, tangent) * tangent
+            half_len = edge_len / 2 - offset_perp * tan30
+            a = mid - half_len * tangent
+            b = mid + half_len * tangent
+
+        if a is None or b is None:
+            continue
+        if np.dot(b - a, tangent) < 1e-9:
+            continue
+        segments.append((a, b))
+    return segments
+
+
+def add_wall_lines(d, segments, color, stroke_width):
+    for q0, q1 in segments:
+        d.append(draw.Line(q0[0] * PX_PER_MM, q0[1] * PX_PER_MM,
+                           q1[0] * PX_PER_MM, q1[1] * PX_PER_MM,
+                           stroke=color, stroke_width=stroke_width, fill='none'))
+
+
 def chamfer_polygon(corners, tip_clip):
     """Clip each sharp tip of the triangle, returning a CCW convex polygon.
 
@@ -355,15 +550,23 @@ def add_cutouts(d, pentagons, color, stroke_width):
         d.append(draw.Lines(*coords, close=True, stroke=color, stroke_width=stroke_width, fill='red'))
 
 
+def add_hex_marker(d, center_mm, radius_px, stroke, stroke_width, fill='red'):
+    d.append(draw.Circle(center_mm[0] * PX_PER_MM, center_mm[1] * PX_PER_MM,
+                         radius_px, stroke=stroke, stroke_width=stroke_width, fill=fill))
+
+
 if __name__ == '__main__':
     cut = 'black'
     mark = 'green'
+    wall = 'blue'
 
     interior_side = 8          # full (interior) hexagons along each side
     tip_clip = 12.0             # mm trimmed off each sharp tip
     height_in = 11.825         # height of the clipped triangle, in inches
     num_triangles = 2          # one rightside up and one upside down triangle, sharing an edge
     cutout_wall_height = 0.8   # mm height of house cutout side walls / snub offset
+    wall_spacing = 1.0         # mm between adjacent wall lines
+    wall_seed = 42             # reproducible random interior hex / edge for testing
 
     # The edge rows are half hexagons; the full interior triangle is 3 smaller per
     # side (one half-hexagon row plus the two shared corners), so add 3.
@@ -377,6 +580,13 @@ if __name__ == '__main__':
 
     base_poly, base_etch, base_cutouts = snub_triangle(n, R, tip_clip, cutout_wall_height)
 
+    rng = random.Random(wall_seed)
+    allowed_interior = allowed_interior_hex_indices(n)
+    wall_hex = rng.choice(allowed_interior)
+    wall_edge = rng.randrange(6)
+    test_walls = hex_wall_lines(*wall_hex, n, R, wall_edge, wall_spacing, set())
+    disallowed_centers = [hex_center(*h, R) for h in disallowed_wall_hex_indices(n)]
+
     # Down-pointing (flip=False) side triangles slide down ALONG their shared long
     # edge (keeping it collinear, so the edge stays mostly shared) until the snub
     # nose reaches the same ground plane as the up-pointing triangles' base.  The
@@ -386,12 +596,15 @@ if __name__ == '__main__':
     slide = 2 * tip_clip / np.sqrt(3)
 
     placed = []  # (perimeter_polygon, etch_segments, cutouts) per triangle, in mm
+    wall_segments = []
+    disallowed_markers = []
     for m in range(num_triangles):
         x0 = m * side / 2
         flip = (m % 2 == 1)
         poly = transform(base_poly, x0, side, height, flip)
         etch = [tuple(transform(seg, x0, side, height, flip)) for seg in base_etch]
         cutouts = [transform(p, x0, side, height, flip) for p in base_cutouts]
+        off = None
         if not flip:
             sx = -1.0 if m < center else 1.0  # slide along the center-facing edge
             off = np.array([sx * slide * 0.5, slide * np.sqrt(3) / 2])
@@ -399,9 +612,30 @@ if __name__ == '__main__':
             etch = [(a + off, b + off) for a, b in etch]
             cutouts = [[p + off for p in pent] for pent in cutouts]
         placed.append((poly, etch, cutouts))
+        if m == 0:
+            for c in disallowed_centers:
+                p = transform([c], x0, side, height, flip)[0]
+                if off is not None:
+                    p = p + off
+                disallowed_markers.append(p)
+            for a, b in test_walls:
+                ta = transform([a], x0, side, height, flip)[0]
+                tb = transform([b], x0, side, height, flip)[0]
+                if off is not None:
+                    ta = ta + off
+                    tb = tb + off
+                wall_segments.append((ta, tb))
 
     xs = [p[0] * PX_PER_MM for poly, _, _ in placed for p in poly]
     ys = [p[1] * PX_PER_MM for poly, _, _ in placed for p in poly]
+    for a, b in wall_segments:
+        xs.extend([a[0] * PX_PER_MM, b[0] * PX_PER_MM])
+        ys.extend([a[1] * PX_PER_MM, b[1] * PX_PER_MM])
+    marker_r = 10
+    for p in disallowed_markers:
+        cx, cy = p[0] * PX_PER_MM, p[1] * PX_PER_MM
+        xs.extend([cx - marker_r, cx + marker_r])
+        ys.extend([cy - marker_r, cy + marker_r])
     margin = 20
     minx, miny = min(xs) - margin, min(ys) - margin
     width = (max(xs) + margin) - minx
@@ -412,4 +646,7 @@ if __name__ == '__main__':
         add_perimeter(d, poly, cut, stroke_width=5)
         add_etch(d, etch, mark, stroke_width=3)
         add_cutouts(d, cutouts, cut, stroke_width=2)
+    add_wall_lines(d, wall_segments, wall, stroke_width=2)
+    for p in disallowed_markers:
+        add_hex_marker(d, p, radius_px=10, stroke=cut, stroke_width=2, fill='pink')
     d.save_svg('SnubTriangleBoard.svg')
