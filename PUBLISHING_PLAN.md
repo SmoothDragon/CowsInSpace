@@ -13,6 +13,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 | Component | Process | Status |
 |-----------|---------|--------|
 | 6× snub triangle boards | Laser cut (SVG) | `boards/snub-birch/` — **3 mm birch plywood 1'×2'** |
+| 6× smooth triangle boards (alt.) | Laser cut (SVG) | `boards/smooth-acrylic/` — **black acrylic 12"×16"**, legacy scalloped edges |
 | 1× center hub (“moon”) | 3D print | Not started |
 | Cow pieces (×6+ sets?) | 3D print | `spherical_cow-scad.rs` — **white Holstein + 1–6 black pips** |
 | Cow place markers | Laser / sticker / thin print | `CowPlaceMarker.svg.py` — 2D top-down cow footprint per player |
