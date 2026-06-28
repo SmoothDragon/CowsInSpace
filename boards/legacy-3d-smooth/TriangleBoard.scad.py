@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+"""Smooth circle-edge triangular board (3D OpenSCAD via solid2).
+
+The triangle is built from a union of circles (one per hex cell) plus a scalloped
+outer boundary from outer_edge(). Output: OpenSCAD to stdout → boards/legacy-3d-smooth/TriangleBoard.scad.
+
+This is NOT boards/snub-birch/SnubTriangleBoard.svg.py (3 mm birch laser panels).
+See docs/PROJECT_MAP.md.
+
+Requires: pip install solid2
+"""
 import numpy as np
 import solid2 as sd
 import drawsvg as draw

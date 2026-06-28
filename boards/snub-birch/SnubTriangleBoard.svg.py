@@ -1,7 +1,20 @@
+#!/usr/bin/env python3
+"""Snub triangle laser-cut boards for 3 mm birch plywood 1'×2' sheets.
+
+Generates six production panels, three front cut sheets, three back etch sheets,
+and SnubTriangleBoard-panels.json. All outputs are written alongside this file.
+
+Run: python3 boards/snub-birch/SnubTriangleBoard.svg.py
+"""
 import json
+from pathlib import Path
 import numpy as np
 import drawsvg as draw
 import random
+
+# Output directory for generated SVGs and manifest (this folder).
+BOARD_DIR = Path(__file__).resolve().parent
+DEFAULT_OUTPUT_DIR = str(BOARD_DIR)
 
 # 96 dpi => pixels per millimeter, matching the ~3.78 factor used by TriangleBoard.svg.py
 PX_PER_MM = 96 / 25.4
@@ -788,9 +801,12 @@ SHEETBACK_WALL_SEEDS = {
     6: 706,
 }
 
-# Birch ply: nominal 1'×2' (24"×12") stock, but actual size is 1/8" less per dimension.
-SHEET_NOMINAL_WIDTH_IN = 24.0
-SHEET_NOMINAL_HEIGHT_IN = 12.0
+# 3 mm birch plywood: nominal 1'×2' sheet (24"×12", long edge horizontal).
+# Actual sheet size is typically ⅛" undersize per dimension from nominal.
+SHEET_MATERIAL = '3mm birch plywood'
+SHEET_THICKNESS_MM = 3.0
+SHEET_NOMINAL_WIDTH_IN = 24.0   # 2 ft (long edge)
+SHEET_NOMINAL_HEIGHT_IN = 12.0  # 1 ft
 SHEET_TRIM_IN = 0.125
 SHEET_WIDTH_IN = SHEET_NOMINAL_WIDTH_IN - SHEET_TRIM_IN   # 23.875"
 SHEET_HEIGHT_IN = SHEET_NOMINAL_HEIGHT_IN - SHEET_TRIM_IN  # 11.875"
@@ -943,7 +959,7 @@ def geometry_params(interior_side=8, tip_clip=12.0, height_in=None, cutout_wall_
     return n, R, tip_clip, cutout_wall_height
 
 
-def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
+def generate_laser_sheets(output_dir=DEFAULT_OUTPUT_DIR, interior_side=8, tip_clip=12.0,
                           height_in=None, cutout_wall_height=0.8,
                           wall_spacing=WALL_SPACING_MM, panel_seeds=PANEL_WALL_SEEDS,
                           sheet_groups=PANEL_SHEET_GROUPS,
@@ -974,7 +990,8 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
         'pip_three_arm_frac': PIP_THREE_ARM_FRAC,
         'pip_four_arm_frac': PIP_FOUR_ARM_FRAC,
         'pip_color': PIP_COLOR,
-        'material': '1/8" birch plywood',
+        'material': SHEET_MATERIAL,
+        'sheet_thickness_mm': SHEET_THICKNESS_MM,
         'sheet_nominal_size_in': [SHEET_NOMINAL_WIDTH_IN, SHEET_NOMINAL_HEIGHT_IN],
         'sheet_trim_in': SHEET_TRIM_IN,
         'sheet_size_in': [sheet_width_in, sheet_height_in],
@@ -1019,7 +1036,7 @@ def generate_laser_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
     return manifest
 
 
-def generate_sheetback_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
+def generate_sheetback_sheets(output_dir=DEFAULT_OUTPUT_DIR, interior_side=8, tip_clip=12.0,
                                 height_in=None, cutout_wall_height=0.8,
                                 wall_spacing=WALL_SPACING_MM,
                                 panel_seeds=SHEETBACK_WALL_SEEDS,
@@ -1094,8 +1111,11 @@ def generate_sheetback_sheets(output_dir='.', interior_side=8, tip_clip=12.0,
     }
 
 
-def merge_sheetback_manifest(sheetback_info, manifest_path='SnubTriangleBoard-panels.json'):
+def merge_sheetback_manifest(sheetback_info, manifest_path=None):
     """Add sheetback section to an existing production manifest."""
+    if manifest_path is None:
+        manifest_path = BOARD_DIR / 'SnubTriangleBoard-panels.json'
+    manifest_path = Path(manifest_path)
     with open(manifest_path, encoding='utf-8') as f:
         manifest = json.load(f)
     manifest.update(sheetback_info)
@@ -1105,7 +1125,7 @@ def merge_sheetback_manifest(sheetback_info, manifest_path='SnubTriangleBoard-pa
     return manifest
 
 
-def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
+def generate_production_panels(output_dir=DEFAULT_OUTPUT_DIR, interior_side=8, tip_clip=12.0,
                                height_in=None, cutout_wall_height=0.8,
                                wall_spacing=WALL_SPACING_MM, panel_seeds=PANEL_WALL_SEEDS,
                                write_manifest=True):
@@ -1150,10 +1170,12 @@ def generate_production_panels(output_dir='.', interior_side=8, tip_clip=12.0,
     return manifest
 
 
-def generate_dev_pair(output_path='SnubTriangleBoard.svg', interior_side=8, tip_clip=12.0,
+def generate_dev_pair(output_path=None, interior_side=8, tip_clip=12.0,
                       height_in=None, cutout_wall_height=0.8, wall_spacing=WALL_SPACING_MM,
                       wall_seed=42):
     """Two tessellated snub triangles (up/down) for layout preview."""
+    if output_path is None:
+        output_path = str(BOARD_DIR / 'SnubTriangleBoard.svg')
     cut = 'black'
     mark = 'green'
     wall = 'green'

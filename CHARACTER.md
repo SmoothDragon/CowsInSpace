@@ -25,6 +25,16 @@ A **spherical Holstein cow** in a clear bubble helmet, designed for a bright, ar
 
 ## Color & markings
 
+### Table pieces (3D print)
+
+- **Base:** Solid **white** body for all cow miniatures
+- **Holstein patches:** Irregular **black** splotches on body and head (same look as box art, simplified for scale)
+- **Cow ID:** **Black pips on a white patch** on the back — standard die layouts with **1–6 pips** (no player colors)
+- Pip count alone disambiguates the six cows; patches add Holstein character but vary slightly per sculpt
+- Face, helmet, and hooves stay readable at miniature scale
+
+### Illustration & box art
+
 - **Base:** White with large, irregular **black Holstein patches** on body and head
 - **Accents:** Pink snout and inner ears; tan/cream horns; black hooves and tail tuft
 - Patches should stay **simple and bold** — readable at miniature scale and from across the table

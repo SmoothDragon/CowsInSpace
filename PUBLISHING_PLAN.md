@@ -12,9 +12,12 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 | Component | Process | Status |
 |-----------|---------|--------|
-| 6× snub triangle boards | Laser cut (SVG) | `SnubTriangleBoard.svg` / `.svg.py` — in progress |
+| 6× snub triangle boards | Laser cut (SVG) | `boards/snub-birch/` — **3 mm birch plywood 1'×2'** |
 | 1× center hub (“moon”) | 3D print | Not started |
-| Cow pieces (×6+ sets?) | 3D print | Prototype: `spherical_cow.stl` via `spherical_cow-scad.rs` |
+| Cow pieces (×6+ sets?) | 3D print | `spherical_cow-scad.rs` — **white Holstein + 1–6 black pips** |
+| Cow place markers | Laser / sticker / thin print | `CowPlaceMarker.svg.py` — 2D top-down cow footprint per player |
+| Active cow marker | 3D print or sticker | `active_cow_marker.scad` / `ActiveCowMarker.svg` — cyan ring |
+| Target die (octahedron, 1–4 pips) | 3D print | `die_octahedron_cowsinspace.scad` — **slate gray**, not white |
 | Target / marker pieces | 3D print or cut | Prototypes: `frictionless_shira_target.*`, hex targets in older boards |
 | Rule modifier cards | Print-on-demand or boxed deck | `CowsInSpace.pdf` from `CowsInSpace.json` + `CowsInSpace.tex.py` |
 
@@ -24,7 +27,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 ### 2.1 What we have
 
-- **`SnubTriangleBoard.svg.py`** generates laser-cut/etch artwork:
+- **`boards/snub-birch/SnubTriangleBoard.svg.py`** generates laser-cut/etch artwork on **3 mm birch plywood** (nominal **1'×2'** / 12″×24″ sheets):
   - Pointy-top hex grid clipped to an equilateral snub triangle
   - **Cut:** black perimeter, red corner house cutouts
   - **Etch:** green interior hex edges
@@ -36,7 +39,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 ### 2.2 Work needed
 
 - [ ] **Laser sheet SVGs** — three cut files sized to **23.875″×11.875″** actual birch (nominal 1′×2′ minus ⅛″ per dimension), two panels per sheet (see §2.3).
-- [x] **Wall manifest** — six documented `wall_seed` values; record hex, pattern, and rotation per panel (`SnubTriangleBoard-panels.json`).
+- [x] **Wall manifest** — six documented `wall_seed` values; record hex, pattern, and rotation per panel (`boards/snub-birch/SnubTriangleBoard-panels.json`).
 - [ ] **Panel labeling:** subtle etched ID (1–6) on non-play face or edge, aligned with hub numbering.
 - [ ] **Assembly diagram:** how six triangles meet at the hub (clockwise numbering, which corner points inward).
 - [ ] **Layout catalog:** document recommended configurations (symmetric, asymmetric, “space curvature” wrap-friendly layouts).
@@ -44,16 +47,16 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 ### 2.3 Decisions
 
-**Panel geometry and walls (decided):** Six laser-cut panels from `SnubTriangleBoard.svg.py` with **identical geometry** (same `interior_side`, `height_in`, `tip_clip`, perimeter, corner cutouts, and hex grid). The only intentional cut/etch variation between panels is the **placement of the four walled interior hexes** — each panel gets a **different random** assignment (four non-adjacent allowed-interior hexes, one of each 3-wall pattern, random rotation), frozen at production time via a distinct `wall_seed` per panel 1–6.
+**Panel geometry and walls (decided):** Six laser-cut panels from `boards/snub-birch/SnubTriangleBoard.svg.py` with **identical geometry** (same `interior_side`, `height_in`, `tip_clip`, perimeter, corner cutouts, and hex grid). The only intentional cut/etch variation between panels is the **placement of the four walled interior hexes** — each panel gets a **different random** assignment (four non-adjacent allowed-interior hexes, one of each 3-wall pattern, random rotation), frozen at production time via a distinct `wall_seed` per panel 1–6.
 
-**Production implication:** Generate **three laser-cut SVG files** (`SnubTriangleBoard-sheet-1.svg` … `-3.svg`), each sized for the **actual** birch sheet **23.875″×11.875″** (nominal 1′×2′ stock is ⅛″ undersize in both dimensions; long edge horizontal). Two snub triangles per sheet with **10 mm** horizontal gap between panels and **5 mm** top/bottom margin. Panel pairs: **1+2**, **3+4**, **5+6**. `height_in` is computed to fit vertical margins. Manifest: `SnubTriangleBoard-panels.json`.
+**Production implication:** Generate **three laser-cut SVG files** (`SnubTriangleBoard-sheet-1.svg` … `-3.svg`) in `boards/snub-birch/`, each sized for **3 mm birch** at **actual** sheet **23.875″×11.875″** (nominal 1'×2' stock is ⅛″ undersize in both dimensions; long edge horizontal). Two snub triangles per sheet with **10 mm** horizontal gap between panels and **5 mm** top/bottom margin. Panel pairs: **1+2**, **3+4**, **5+6**. `height_in` is computed to fit vertical margins. Manifest: `boards/snub-birch/SnubTriangleBoard-panels.json`.
 
-**Material (decided):** ⅛″ birch plywood; kerf compensation TBD at cut time.
+**Material (decided):** **3 mm birch plywood** (nominal 1'×2' sheet); kerf compensation TBD at cut time.
 
 ### 2.4 Open questions
 
 - Should outer perimeter walls be **identical** across panels for consistent “wrap” when using the Space Curvature card?
-- Target hexes: cut circles (like `TriangleBoard.svg`), 3D printed inserts, or printed markers?
+- Target hexes: cut circles (like `boards/legacy-2d/TriangleBoard.svg`), 3D printed inserts, or printed markers?
 
 ---
 
@@ -68,7 +71,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 ### 3.2 Work needed
 
-- [ ] **Measure interface geometry** from snub triangle inner corner / shared-edge dimensions (export reference points from `SnubTriangleBoard.svg.py` or CAD).
+- [ ] **Measure interface geometry** from snub triangle inner corner / shared-edge dimensions (export reference points from `boards/snub-birch/SnubTriangleBoard.svg.py` or CAD).
 - [ ] **Hub CAD model** (OpenSCAD, FreeCAD, or Fusion) with:
   - 6-fold symmetry
   - Labeled positions 1–6 (embossed or engraved)
@@ -89,19 +92,22 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 ### 4.1 What we have
 
 - **`spherical_cow-scad.rs`** (Rust + flowscad) → OpenSCAD → **`spherical_cow.stl`**
-- Stylized spherical body, legs, head; prototype subtracts **numeric text** 1–6 on the surface (not yet cow-like splotches).
+- Stylized spherical body, legs, head; **colored pip splotches** (1–6) on the back for player ID (playtest: white body + splotch color).
 
 ### 4.2 Design intent
 
 - Cows should read as **spherical cows**, not generic balls.
-- **Six distinguishable backs** with **splotch patterns** roughly resembling **die pips** (1–6), for:
-  - Player identity
-  - Possibly matching hub numbers or movement values
+- **White Holstein bodies** with **black patches** and **1–6 black pip markings** on the back for cow identity.
+- Each cow has a matching **2D place marker** (`CowPlaceMarker.svg.py`) — flat top-down silhouette the cow stands on.
+- **Active cow:** cyan ring marker (`active_cow_marker.scad`) shows which cow is moving.
+- **Target die** (octahedron, 1–4 pips): print **slate gray** — must not match cow/splotch colors (`die_octahedron_cowsinspace.scad`, `PLAYTEST_COMPONENTS.md`).
 
 ### 4.3 Work needed
 
-- [ ] **Replace/enhance** text cutouts with **organic splotch** geometry (SCAD modules or texture via bump map / separate overlay mesh).
-- [ ] **Six STL variants** (or one parametric file with `pip_count` / `cow_id`).
+- [x] **Playtest marking system** — white Holstein cows, 1–6 black pips, gray die, cyan active marker (`PLAYTEST_COMPONENTS.md`)
+- [x] **2D place markers** — `CowPlaceMarker.svg.py`
+- [x] **Holstein + pip geometry** — `holstein_patches()` and `pip_marking()` in `spherical_cow-scad.rs`
+- [ ] **Six STL variants** with white/black print profile
 - [ ] **Scale** relative to hex size (hex circumradius ~20.6 mm at current board params → cow base ~12 mm radius in prototype; verify on real board).
 - [ ] **Print profile:** material (PLA/PETG), support strategy under legs, `$fn` vs. print time.
 - [ ] **Color:** single material + paint vs. multi-color AMS vs. dyed splotches.
@@ -109,7 +115,7 @@ A path-finding board game on a modular hexagonal field, with rule-modifier cards
 
 ### 4.4 Open questions
 
-- Do pip patterns encode **player color** only, or **gameplay** (e.g. movement die)?
+- Do pip patterns encode **cow identity** only, or **gameplay** (e.g. movement die)? *(Playtest: 1–6 pips = cow ID; separate gray octahedron die for targets 1–4.)*
 - Standing stability: widen foot / flatten bottom vs. accept tipping?
 - Herd size and distinguishability for color-blind players (shape + pip count)?
 

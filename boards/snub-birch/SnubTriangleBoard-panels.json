@@ -10,7 +10,8 @@
   "pip_three_arm_frac": 0.45,
   "pip_four_arm_frac": 0.55,
   "pip_color": "orange",
-  "material": "1/8\" birch plywood",
+  "material": "3mm birch plywood",
+  "sheet_thickness_mm": 3.0,
   "sheet_nominal_size_in": [
     24.0,
     12.0
