@@ -1,0 +1,7 @@
+[package]
+name = "cowsinspace_geom"
+version.workspace = true
+edition.workspace = true
+description = "Shared hex math, mm units, and dice-pip layouts for Cows in Space"
+
+[dependencies]

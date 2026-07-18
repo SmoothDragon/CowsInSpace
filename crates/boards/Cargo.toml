@@ -1,0 +1,9 @@
+[package]
+name = "cowsinspace_boards"
+version.workspace = true
+edition.workspace = true
+description = "Board generators (hex math shared; SVG still Python until ported)"
+
+[dependencies]
+anyhow = { workspace = true }
+cowsinspace_geom = { workspace = true }

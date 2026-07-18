@@ -1,0 +1,19 @@
+[package]
+name = "cowsinspace_cli"
+version.workspace = true
+edition.workspace = true
+description = "Cows in Space generator CLI"
+default-run = "cowsinspace"
+
+[[bin]]
+name = "cowsinspace"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+cowsinspace_boards = { workspace = true }
+cowsinspace_centers = { workspace = true }
+cowsinspace_cows = { workspace = true }
+cowsinspace_dice = { workspace = true }
+cowsinspace_markers = { workspace = true }

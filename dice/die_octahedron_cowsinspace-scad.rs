@@ -1,11 +1,10 @@
-//! Target die source — see `die_octahedron_cowsinspace.scad` (OpenSCAD).
+//! Target die — OpenSCAD source of truth: `die_octahedron_cowsinspace.scad`.
 //!
-//! The playtest die is an octahedron with 1–4 pip faces. Print in slate gray,
-//! not white and not player splotch colors.
+//! ```text
+//! cargo run -p cowsinspace_cli -- dice
+//! openscad -o dice/die_octahedron_cowsinspace.stl dice/die_octahedron_cowsinspace.scad
+//! ```
 
-use anyhow::Result;
-
-fn main() -> Result<()> {
-    eprintln!("Use die_octahedron_cowsinspace.scad — openscad -o die_octahedron_cowsinspace.stl die_octahedron_cowsinspace.scad");
-    Ok(())
+fn main() {
+    eprintln!("Use die_octahedron_cowsinspace.scad (or: cargo run -p cowsinspace_cli -- dice)");
 }

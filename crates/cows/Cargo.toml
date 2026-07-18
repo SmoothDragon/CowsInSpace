@@ -1,0 +1,10 @@
+[package]
+name = "cowsinspace_cows"
+version.workspace = true
+edition.workspace = true
+description = "Spherical Holstein cow CAD (flowscad → OpenSCAD)"
+
+[dependencies]
+anyhow = { workspace = true }
+flowscad = { workspace = true }
+cowsinspace_geom = { workspace = true }

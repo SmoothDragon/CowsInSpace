@@ -1,0 +1,8 @@
+[package]
+name = "cowsinspace_dice"
+version.workspace = true
+edition.workspace = true
+description = "Target octahedron die — OpenSCAD source path and regen notes"
+
+[dependencies]
+anyhow = { workspace = true }

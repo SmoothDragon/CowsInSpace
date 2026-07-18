@@ -1,3 +1,8 @@
+*.3mf
+.venv
+.tmux*
+/target/
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

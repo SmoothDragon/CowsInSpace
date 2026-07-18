@@ -93,6 +93,16 @@ boards/legacy-3d-smooth/TriangleBoard.scad.py  ──► circle-edge triangle (a
 ## Directory layout
 
 ```
+Cargo.toml              Rust workspace root
+crates/
+  geom/                 Shared hex math, mm units, pip layouts
+  cows/                 Spherical cow CAD (flowscad)
+  dice/                 Target die path / regen hints
+  boards/               Board constants + Python regen pointers
+  markers/              16 mm Holstein marker SVG/DXF emission
+  centers/              Center hub CAD (flowscad)
+  cli/                  `cowsinspace` binary
+
 boards/
   snub-birch/           Production laser (3 mm birch 1'×2')
   smooth-acrylic/       Scalloped triangle panels (black acrylic 12"×16")
@@ -101,7 +111,10 @@ boards/
   legacy-3d-smooth/     Circle-edge OpenSCAD triangle
   legacy-3d-hub/        Hex center hub prototype
 
-pieces/                 (at repo root today: cows, die, hub, markers)
+cows/                   Cow STL / OpenSCAD outputs
+dice/                   Target die .scad / .stl
+markers/                CIS marker art + cow-marker-*.svg/.dxf
+centers/                Hub outputs; old/ has legacy flowscad stubs
 cards/                  CowsInSpace.json, tex, pdf, graphics/
 docs/                   This file, PUBLISHING_PLAN.md, PLAYTEST_COMPONENTS.md
 ```
@@ -112,12 +125,12 @@ docs/                   This file, PUBLISHING_PLAN.md, PLAYTEST_COMPONENTS.md
 
 | Area | Key files |
 |------|-----------|
-| **Rules / cards** | `CowsInSpace.json`, `CowsInSpace.tex.py`, `make` |
-| **Cows** | `spherical_cow-scad.rs` |
-| **Place markers** | `CowPlaceMarker.svg.py` |
-| **Active cow** | `active_cow_marker.scad` |
-| **Target die** | `die_octahedron_cowsinspace.scad` |
-| **Center hub** | `frictionless_center_big-scad.rs` |
+| **Rules / cards** | `cards/CowsInSpace.json`, `cards/CowsInSpace.tex.py`, `make` |
+| **Cows (Rust)** | `crates/cows` → `cows/spherical_cow.scad` |
+| **Place markers (Rust)** | `crates/markers` → `markers/cow-marker-*.{svg,dxf}` |
+| **Active cow** | `active_cow_marker.scad` (if present) |
+| **Target die** | `dice/die_octahedron_cowsinspace.scad` |
+| **Center hub (Rust)** | `crates/centers` → `centers/frictionless_center_big.scad` |
 | **Publishing** | `PUBLISHING_PLAN.md` |
 
 ---
@@ -126,9 +139,14 @@ docs/                   This file, PUBLISHING_PLAN.md, PLAYTEST_COMPONENTS.md
 
 | Task | Command |
 |------|---------|
+| Build Rust workspace | `cargo build --workspace` |
+| Regenerate **cow OpenSCAD** | `cargo run -p cowsinspace_cli -- cows` |
+| Regenerate **marker SVG+DXF** | `cargo run -p cowsinspace_cli -- markers` |
+| Regenerate **center hub OpenSCAD** | `cargo run -p cowsinspace_cli -- centers` |
+| **Die** path + OpenSCAD hint | `cargo run -p cowsinspace_cli -- dice` |
+| Board regen hint (still Python) | `cargo run -p cowsinspace_cli -- boards hex-edge` |
 | Regenerate **production** birch sheets | `python3 boards/snub-birch/SnubTriangleBoard.svg.py` |
 | Regenerate **smooth acrylic** panels | `.venv/bin/python boards/smooth-acrylic/SmoothTriangleBoard.svg.py` |
 | Regenerate **hex-edge acrylic** panels | `.venv/bin/python boards/hex-edge-acrylic/HexEdgeTriangleBoard.svg.py` |
-| Regenerate **place markers** | `python3 CowPlaceMarker.svg.py` |
 | Regenerate **cards PDF** | `make` |
 | Regenerate **smooth 3D triangle** | `python3 boards/legacy-3d-smooth/TriangleBoard.scad.py > boards/legacy-3d-smooth/TriangleBoard.scad` |

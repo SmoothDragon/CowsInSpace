@@ -1,0 +1,10 @@
+[package]
+name = "cowsinspace_markers"
+version.workspace = true
+edition.workspace = true
+description = "16 mm Holstein pip markers — SVG/DXF emission"
+
+[dependencies]
+anyhow = { workspace = true }
+cowsinspace_geom = { workspace = true }
+regex = "1"

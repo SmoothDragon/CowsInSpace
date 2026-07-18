@@ -1,0 +1,9 @@
+[package]
+name = "cowsinspace_centers"
+version.workspace = true
+edition.workspace = true
+description = "Center hub CAD (flowscad → OpenSCAD)"
+
+[dependencies]
+anyhow = { workspace = true }
+flowscad = { workspace = true }

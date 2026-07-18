@@ -1,0 +1,28 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/geom",
+    "crates/cows",
+    "crates/dice",
+    "crates/boards",
+    "crates/markers",
+    "crates/centers",
+    "crates/cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/tom/CowsInSpace"
+
+[workspace.dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+flowscad = "0.1.2"
+cowsinspace_geom = { path = "crates/geom" }
+cowsinspace_cows = { path = "crates/cows" }
+cowsinspace_dice = { path = "crates/dice" }
+cowsinspace_boards = { path = "crates/boards" }
+cowsinspace_markers = { path = "crates/markers" }
+cowsinspace_centers = { path = "crates/centers" }
