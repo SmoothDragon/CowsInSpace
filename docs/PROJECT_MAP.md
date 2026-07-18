@@ -140,11 +140,22 @@ docs/                   This file, PUBLISHING_PLAN.md, PLAYTEST_COMPONENTS.md
 | Task | Command |
 |------|---------|
 | Build Rust workspace | `cargo build --workspace` |
+| Build **all main STLs** (one shot) | `cargo run -p cowsinspace_cli -- stl` |
 | Regenerate **cow OpenSCAD** | `cargo run -p cowsinspace_cli -- cows` |
 | Regenerate **marker SVG+DXF** | `cargo run -p cowsinspace_cli -- markers` |
 | Regenerate **center hub OpenSCAD** | `cargo run -p cowsinspace_cli -- centers` |
 | **Die** path + OpenSCAD hint | `cargo run -p cowsinspace_cli -- dice` |
 | Board regen hint (still Python) | `cargo run -p cowsinspace_cli -- boards hex-edge` |
+
+### One-shot STL outputs (`cowsinspace stl`)
+
+Requires `openscad` on `PATH`. Writes `.scad` then meshes:
+
+| Piece | OpenSCAD | STL |
+|-------|----------|-----|
+| Cows (6 on a sheet) | `cows/spherical_cow.scad` | `cows/spherical_cow.stl` |
+| Target die | `dice/die_octahedron_cowsinspace.scad` | `dice/die_octahedron_cowsinspace.stl` |
+| Center hub | `centers/frictionless_center_big.scad` | `centers/frictionless_center_big.stl` |
 | Regenerate **production** birch sheets | `python3 boards/snub-birch/SnubTriangleBoard.svg.py` |
 | Regenerate **smooth acrylic** panels | `.venv/bin/python boards/smooth-acrylic/SmoothTriangleBoard.svg.py` |
 | Regenerate **hex-edge acrylic** panels | `.venv/bin/python boards/hex-edge-acrylic/HexEdgeTriangleBoard.svg.py` |
