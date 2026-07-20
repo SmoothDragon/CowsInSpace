@@ -132,6 +132,20 @@ docs/                   This file, PUBLISHING_PLAN.md, PLAYTEST_COMPONENTS.md
 | **Target die** | `dice/die_octahedron_cowsinspace.scad` |
 | **Center hub (Rust)** | `crates/centers` → `centers/frictionless_center_big.scad` |
 | **Publishing** | `PUBLISHING_PLAN.md` |
+| **Cow-ntdown app** | [SmoothDragon/cow-ntdown](https://github.com/SmoothDragon/cow-ntdown) (separate repo; stub at `apps/cow-ntdown/README.md`) |
+
+---
+
+## Apps
+
+| App | Location | Stack | Notes |
+|-----|----------|-------|-------|
+| **Cow-ntdown** | [github.com/SmoothDragon/cow-ntdown](https://github.com/SmoothDragon/cow-ntdown) | Expo SDK 54 / React Native | Separate public repo; one-minute timer with ready/set/go moos |
+
+```bash
+git clone https://github.com/SmoothDragon/cow-ntdown.git
+cd cow-ntdown && npm install && npx expo start
+```
 
 ---
 
@@ -140,9 +154,11 @@ docs/                   This file, PUBLISHING_PLAN.md, PLAYTEST_COMPONENTS.md
 | Task | Command |
 |------|---------|
 | Build Rust workspace | `cargo build --workspace` |
+| Run **Cow-ntdown** | clone [cow-ntdown](https://github.com/SmoothDragon/cow-ntdown), then `npx expo start` |
 | Build **all main STLs** (one shot) | `cargo run -p cowsinspace_cli -- stl` |
 | Regenerate **cow OpenSCAD** | `cargo run -p cowsinspace_cli -- cows` |
 | Regenerate **marker SVG+DXF** | `cargo run -p cowsinspace_cli -- markers` |
+| Marker **white/black STLs** (from DXF) | `cargo run -p cowsinspace_cli -- markers --stl` |
 | Regenerate **center hub OpenSCAD** | `cargo run -p cowsinspace_cli -- centers` |
 | **Die** path + OpenSCAD hint | `cargo run -p cowsinspace_cli -- dice` |
 | Board regen hint (still Python) | `cargo run -p cowsinspace_cli -- boards hex-edge` |
